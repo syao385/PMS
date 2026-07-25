@@ -1,0 +1,27 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Node dependencies & build outputs
+node_modules/
+dist/
+build/
+.cache/
+
+# Databases & local storage
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs & scratch
+*.log
+logs/
+.DS_Store
