@@ -1,107 +1,115 @@
 # Implementation Plan: Institutional US Equities/ETFs Long/Short PMS (`institutional-pms`)
 
-This plan incorporates the specific choices from our design alignment interview to build an institutional-grade Long/Short Stocks & ETFs Portfolio Management System.
+This document details the architecture for `institutional-pms`, integrating qualitative AI fundamental research, sector-adaptive intrinsic valuation, StockBee MAGNA Episodic Pivot (EP) catalyst screening, embedded TradingView technical charting, and market-neutral quantitative risk optimization.
 
 ---
 
-## Confirmed Specifications & Technical Decisions
+## 1. Architectural Enhancements & Key Decisions
 
-| Dimension | Selected Option & Decision |
+| Dimension | Technical Specification |
 | :--- | :--- |
-| **Project Location** | `C:\Users\jfan\.gemini\antigravity\scratch\institutional-pms` |
-| **AI LLM Provider** | Google Gemini (3.6 Flash / Pro) with multi-provider fallback architecture |
-| **Data Pipeline** | `yfinance` + `sec-edgar-downloader` / `OpenBB SDK` (Free open-source MVP stack, with pluggable FMP/Polygon connector) |
-| **User Interface** | Full React Web UI Dashboard (Vite + Tailwind CSS + Recharts + Markdown Renderer) |
-| **Quant Strategy** | Market-Neutral Long/Short (Dollar-neutral / Beta-neutral risk parity allocation) |
-| **Architecture** | Single Modular Monorepo (`backend/` FastAPI + `frontend/` React) |
+| **Location** | `c:\Users\jfan\Documents\institutional-pms` |
+| **UI Design System** | Premium Quantitative Styling inspired by `@MarketTerminal` & `@GammaGexTrading` (Deep navy `#070913`, glassmorphism `rgba(15, 18, 36, 0.75)`, fonts `'Outfit'` + `'Plus Jakarta Sans'`, neon glow accents, collapsible sidebar navigation, status pulse indicators) |
+| **Unified Scanner** | **Merged Quality & Technical EP Scanner**: Single unified menu combining fundamental quality criteria (ROIC $\ge 15\%$, Debt/Equity $\le 1.0$, Moat Score $\ge 4.0$) with StockBee MAGNA EP triggers. |
+| **Embedded TradingView Chart** | **In-Page Embedded Technical Chart**: TradingView interactive chart embedded directly inside the Universal Scanner page, dynamically switching symbols upon row selection. |
+| **MAGNA Earnings Play Integration** | **StockBee MAGNA Criteria** integrated into `/earnings-review` & `/earnings-team` skills: **M**omentum ($\ge 8\%$ gap), **A**cceleration ($\ge 3.0\times$ RVOL), **G**ap Clearance, **N**ews/Earnings surprise ($\ge 15\%$), **A**ccumulation (HOD close ratio $\ge 85\%$). |
+| **Intrinsic Valuation Engine** | **Sector-Adaptive Framework**: Automatically routes tickers to GICS sector models (Growth/SaaS $\rightarrow$ Rule of 40 & SBC-Adjusted FCF; Value/Financials $\rightarrow$ DDM & ROE-Ke; Tech/Hardware $\rightarrow$ DCF & EV/EBITDA). |
+| **Portfolio Management** | Symbol Add/Remove CRUD, Watchlist state management, Cross-Symbol Side-by-Side Matrix. |
 
 ---
 
-## System Architecture
+## 2. System Architecture
 
 ```mermaid
 graph TD
-    subgraph "Frontend Layer (React + Vite + Tailwind CSS)"
-        Dashboard[Institutional PMS Dashboard]
-        MemoView[Research Memos & 4-Master Scores]
-        RiskView[Market-Neutral Risk & Factor Analytics]
-        LedgerView[Position Ledger & Target Drift]
+    subgraph "Frontend Layer (React + Vite + GammaGex / MarketTerminal UI)"
+        Sidebar[Collapsible Sidebar Nav]
+        ResearchView[4-Master Research Memo & Mirror Test]
+        CompareView[Cross-Symbol Comparative Matrix]
+        
+        subgraph "Unified Universal Scanner Page"
+            ScannerGrid[Merged Quality & MAGNA EP Screener Table]
+            EmbeddedChart[Embedded TradingView Technical Chart]
+            MAGNAPanel[MAGNA 5-Point Earnings Catalyst Breakdown]
+        end
+        
+        LedgerView[Portfolio Watchlist & Trade Journal]
     end
 
     subgraph "Backend Service Layer (Python FastAPI)"
         API[FastAPI Gateway]
         
-        subgraph "Phase 1: AI Research Engine (Option C)"
-            GeminiAdapter[Gemini AI Service]
-            BerkshireFramework[ai-berkshire Master Methodologies<br/>Buffett / Munger / Duan / Li Lu]
-            AgentTeam[Multi-Agent Red Teaming Engine]
-            ThesisTracker[Thesis Drift & News Pulse]
+        subgraph "Phase 1: AI Research & Intrinsic Valuation"
+            GeminiAdapter[Gemini 3.6 Multi-Agent Service]
+            MasterEngine[4-Master Methodologies: Buffett/Munger/Duan/Li Lu]
+            SectorValuation[Sector-Adaptive Valuation Solver]
+            DecimalRigor[Decimal.Decimal Math Audit Module]
         end
         
-        subgraph "Phase 2: Quant Risk & Optimization (Option A)"
-            OptEngine[Riskfolio-Lib / PyPortfolioOpt]
-            MarketNeutral[Market-Neutral Long/Short Solver]
-            FactorModel[Factor Exposure & VaR Calculator]
+        subgraph "Phase 2: Quant Risk & Unified MAGNA Screener"
+            MAGNA_Engine[StockBee MAGNA EP & Quality Screener]
+            OptEngine[PyPortfolioOpt Market-Neutral Long/Short]
+            TV_Adapter[TradingView MCP Adapter]
         end
         
-        subgraph "Phase 3: Position Ledger (Option B)"
-            Ledger[Position & Cash Ledger Engine]
-            Rebalancer[Rebalance Signal Generator]
+        subgraph "Phase 3: Portfolio Ledger & Journal"
+            DB[(SQLite Persistence)]
+            WatchlistManager[Watchlist & Symbol CRUD]
+            JournalLogger[Trade Rationale Audit Log]
         end
     end
 
-    subgraph "Data Infrastructure"
-        DB[(SQLite / PostgreSQL Storage)]
-        DataFeeds[yfinance + SEC EDGAR Pipeline]
-    end
-
-    Dashboard --> API
+    Sidebar --> ResearchView
+    Sidebar --> CompareView
+    Sidebar --> ScannerGrid
+    ScannerGrid --> EmbeddedChart
     API --> GeminiAdapter
-    API --> OptEngine
-    API --> Ledger
-    GeminiAdapter --> BerkshireFramework
-    GeminiAdapter --> DataFeeds
-    OptEngine --> DataFeeds
-    Ledger --> DB
+    API --> SectorValuation
+    API --> MAGNA_Engine
+    API --> TV_Adapter
+    API --> DB
 ```
 
 ---
 
-## Proposed Implementation Steps
+## 3. StockBee MAGNA Criteria & Earnings Play Integration
 
-### Step 1: Project Initialization & Core Infrastructure Setup
-* **Location:** `C:\Users\jfan\.gemini\antigravity\scratch\institutional-pms`
-* **Actions:**
-  * Initialize project structure with `backend/` and `frontend/`.
-  * Set up FastAPI backend with CORS, environment configuration (Gemini API key), and database models.
-  * Initialize React + Vite frontend with Tailwind CSS, UI component library, and router.
+The **MAGNA** framework evaluates post-earnings Episodic Pivots across 5 quantitative and qualitative dimensions:
 
-### Step 2: Phase 1 — AI Research & Memo Engine (`ai-berkshire` Port)
-* **Actions:**
-  * Implement `yfinance` & SEC EDGAR data fetchers for US Equities & ETFs (`backend/app/services/data_fetchers/`).
-  * Build Gemini AI integration executing `ai-berkshire`'s 20 core skills (`/investment-research`, `/investment-team`, `/thesis-drift`, `/news-pulse`, `/earnings-review`).
-  * Implement financial accuracy math validator (`tools/financial_rigor.py` adaptation using `decimal.Decimal`).
-  * Build React Research Memo Page with Markdown rendering, 4-Master score cards, and mirror-test passes.
+$$\text{MAGNA Composite Score} = w_M M + w_A A + w_G G + w_N N + w_{Acc} A_{cc}$$
 
-### Step 3: Phase 2 — Market-Neutral Long/Short Quant Risk & Optimization Engine
-* **Actions:**
-  * Integrate `PyPortfolioOpt` / `Riskfolio-Lib` for Market-Neutral Long/Short optimization (Dollar-neutral, Risk-parity, Sector caps).
-  * Build factor exposure calculator (Beta, Value, Momentum) and VaR / Drawdown metrics.
-  * Build React Risk Analytics Page with interactive covariance matrices and efficient frontier charts.
-
-### Step 4: Phase 3 — Position Ledger & Target Rebalancer
-* **Actions:**
-  * Build SQLite / Postgres database schema for long/short positions, tax lots, and target weight drift.
-  * Build React Portfolio Ledger Page with real-time unrealized/realized PnL tracking and rebalance order generation.
+1. **M — Momentum / Movement**: Opening price gap $\ge 8.0\%$ clearing multi-week resistance.
+2. **A — Acceleration / Volume**: Relative Volume ($\text{RVOL} \ge 3.0\times$ 50-day SMA volume).
+3. **G — Gap & Base Clearance**: Clean breakout above prior consolidation range with zero immediate overhead supply.
+4. **N — News & Earnings Surprise**: Earnings Surprise $\ge +15.0\%$, YoY Revenue Acceleration $\ge +25\%$, and Gross Margin Expansion.
+5. **A — Accumulation & Order Flow**: High-of-Day Close Ratio ($\frac{\text{Close} - \text{Low}}{\text{High} - \text{Low}} \ge 0.85$), proving institutional buy-and-hold order flow.
 
 ---
 
-## Verification Plan
+## 4. Proposed Implementation Phases
+
+### Phase 1: AI Research, Sector Valuation & MAGNA Earnings Engine
+* Implement `backend/app/services/sector_valuation.py` supporting GICS-specific intrinsic valuation.
+* Implement StockBee MAGNA evaluation inside `/earnings-review` and `/earnings-team` skills.
+* Port `financial_rigor.py` decimal verification.
+
+### Phase 2: Unified Universal Scanner & Embedded TradingView Chart
+* Implement `backend/app/services/unified_screener.py` combining fundamental quality metrics with MAGNA EP criteria.
+* Integrate `tradingview-mcp` service for embedded technical charts inside the Scanner view.
+* Build Market-Neutral Long/Short portfolio optimizer (`PyPortfolioOpt`).
+
+### Phase 3: Portfolio Ledger, Symbol Comparison & UI Polish
+* Implement SQLite database models for watchlists and trade journals (`实盘记录`).
+* Apply `@MarketTerminal` / `@GammaGexTrading` design system across all React components.
+* Build Cross-Symbol Comparison Matrix and Symbol CRUD modals.
+
+---
+
+## 5. Verification & Test Plan
 
 ### Automated Verification
-1. **API & Engine Tests:** Run `pytest` on backend services ensuring data fetchers, Gemini AI prompts, and `PyPortfolioOpt` math run cleanly.
-2. **Financial Math Tests:** Run decimal precision verification suite on valuation computations.
+1. **PyTest Suite**: Verify sector-adaptive valuation formulas, decimal rigor audits, and MAGNA EP screener calculations.
+2. **API Endpoint Verification**: Test `/api/v1/research/analyze`, `/api/v1/screener/universal`, `/api/v1/comparison`, and `/api/v1/watchlist`.
 
 ### Manual Verification
-1. **Research Memo Run:** Generate a multi-agent research memo for `AAPL` and `NVDA` via the React Web UI and confirm structured 4-master outputs.
-2. **Market-Neutral Long/Short Run:** Supply a 10-stock long / 5-stock short portfolio universe and verify that net beta approaches 0.0 with positive expected return.
+1. **Interactive Prototype Run**: Verify unified scanner filters, dynamic symbol selection updating embedded TradingView chart, MAGNA earnings scores, and side-by-side comparison matrix.
