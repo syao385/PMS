@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { executeSkill } from '../services/api';
-import { RefreshCw, Play, ShieldCheck, Zap, Layers, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { RefreshCw, ShieldCheck, Zap, Layers, Sparkles, CheckCircle2 } from 'lucide-react';
+
 
 interface SkillItem {
   id: string;
@@ -92,9 +93,9 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
   const [customTickerInput, setCustomTickerInput] = useState<string>('');
   const [activeCategoryId, setActiveCategoryId] = useState<string>('deep_research');
   const [activeSkillId, setActiveSkillId] = useState<string>('investment-research');
-  const [forceRefresh, setForceRefresh] = useState<boolean>(false);
   
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const [skillResult, setSkillResult] = useState<any>(null);
 
   // Sync selected ticker with parent

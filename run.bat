@@ -12,9 +12,13 @@ start "FastAPI Backend" cmd /k "cd /d %~dp0backend && venv\Scripts\python.exe -m
 
 :: 2. Launch Vite React Frontend on Port 3000
 echo Starting Vite React Frontend on http://127.0.0.1:3000...
-start "Vite React Frontend" cmd /k "cd /d %~dp0frontend && npm.cmd run dev -- --host 127.0.0.1 --port 3000"
+start "Vite React Frontend" cmd /k "cd /d %~dp0frontend && npx.cmd vite --host 127.0.0.1 --port 3000"
 
-:: 3. Automatically open default browser dashboard
+:: 3. Wait 3 seconds for servers to initialize before opening browser
+echo Waiting for services to initialize...
+timeout /t 3 /nobreak >nul
+
+:: 4. Automatically open default browser dashboard
 echo Opening web dashboard in default browser...
 start http://127.0.0.1:3000/
 
@@ -25,3 +29,4 @@ echo    - Web Dashboard: http://127.0.0.1:3000/
 echo    - Backend API Docs: http://127.0.0.1:8090/docs
 echo ========================================================
 echo.
+
