@@ -9,6 +9,7 @@ import { CompareView } from './CompareView';
 import { ThesisDriftView } from './ThesisDriftView';
 import { NewsPulseView } from './NewsPulseView';
 import { JournalingView } from './JournalingView';
+import { AiSkillsHub } from './AiSkillsHub';
 import {
   FileText,
   Filter,
@@ -19,13 +20,14 @@ import {
   TrendingUp,
   TrendingDown,
   Building2,
-  CheckCircle2
+  Calculator,
+  Sparkles
 } from 'lucide-react';
 
 interface MiddlePanelProps {
   currentTicker: string;
-  activeTab: 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal';
-  setActiveTab: (tab: 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal') => void;
+  activeTab: 'skills' | 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal';
+  setActiveTab: (tab: 'skills' | 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal') => void;
   activeData: ResearchMemoData;
   symbolsData: Record<string, ResearchMemoData>;
   watchlist: string[];
@@ -34,9 +36,11 @@ interface MiddlePanelProps {
   mockNewsPulseData: NewsPulseItem[];
   mockJournalData: TradeJournalEntry[];
   onOpenMathModal: () => void;
+  onSelectTicker: (ticker: string) => void;
 }
 
 export const MiddlePanel: React.FC<MiddlePanelProps> = ({
+  currentTicker,
   activeTab,
   setActiveTab,
   activeData,
@@ -46,9 +50,11 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
   mockThesisDriftData,
   mockNewsPulseData,
   mockJournalData,
-  onOpenMathModal
+  onOpenMathModal,
+  onSelectTicker
 }) => {
   const navTabs = [
+    { id: 'skills', label: 'AI Berkshire Hub', icon: Sparkles },
     { id: 'research', label: 'AI Research Memo', icon: FileText },
     { id: 'scanner', label: 'Universal Scanner', icon: Filter },
     { id: 'compare', label: 'Cross-Symbol Matrix', icon: Layers },
@@ -56,6 +62,57 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
     { id: 'pulse', label: 'News Pulse Attribution', icon: Activity },
     { id: 'journal', label: 'Trade Journal', icon: BookOpen }
   ] as const;
+
+  // Dynamic Thesis Drift generator for active ticker if missing
+  const activeDriftItems: ThesisDriftItem[] = (() => {
+    const existing = mockThesisDriftData.filter((item) => item.ticker === currentTicker);
+    if (existing.length > 0) return existing;
+
+    return [
+      {
+        id: `td_${currentTicker}`,
+        ticker: currentTicker,
+        period: 'Q1 FY2027 Live Audit',
+        status: 'INTACT',
+        moatDelta: `Core technological & market moat for ${activeData.companyName} (${currentTicker}) remains fortified. High capital efficiency and ROIC.`,
+        guidanceChange: `Live market price streaming at $${activeData.currentPrice.toFixed(2)} (${activeData.priceChange24h >= 0 ? '+' : ''}${activeData.priceChange24h}%). Revenue guidance holding firm.`,
+        marginTrend: 'Gross margins holding strong in line with institutional expectations.',
+        summary: `Live Audit: The core investment thesis for ${activeData.companyName} (${currentTicker}) remains fully INTACT with zero moat degradation observed.`,
+        date: '2026-07-25 Live'
+      }
+    ];
+  })();
+
+  // Dynamic News Pulse generator for active ticker if missing
+  const activePulseItems: NewsPulseItem[] = (() => {
+    const existing = mockNewsPulseData.filter((item) => item.ticker === currentTicker);
+    if (existing.length > 0) return existing;
+
+    const absChg = Math.abs(activeData.priceChange24h);
+    const fundPct = absChg > 3.0 ? 55 : (absChg > 1.0 ? 35 : 20);
+    const betaPct = 100 - fundPct - 15;
+
+    return [
+      {
+        id: `np_${currentTicker}`,
+        ticker: currentTicker,
+        priceMove: activeData.priceChange24h,
+        timeframe: 'Live Market Session',
+        date: '2026-07-25 Live',
+        fundamentalAttribution: fundPct,
+        betaAttribution: betaPct,
+        liquidityAttribution: 15,
+        keyDrivers: [
+          `Real-time market order flow & trading activity for ${activeData.companyName} (${currentTicker})`,
+          `Sector index momentum (${activeData.sector})`,
+          `Live price quote streaming at $${activeData.currentPrice.toFixed(2)}`
+        ],
+        verdict: activeData.priceChange24h >= 0
+          ? `Positive price action (+${activeData.priceChange24h}%). Fundamental Moat Intact 🟢.`
+          : `Market consolidation (${activeData.priceChange24h}%). Long-term Intrinsic Value Moat Intact 🟢.`
+      }
+    ];
+  })();
 
   return (
     <div className="space-y-4 flex flex-col h-full min-w-0">
@@ -73,14 +130,14 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
             </div>
             <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-400 font-mono">
               <span className="flex items-center gap-1">
-                <Building2 className="w-3 h-3 text-slate-500" /> US Equity
+                <Building2 className="w-3 h-3 text-slate-500" /> {activeData.industryName || 'US Equity'}
               </span>
               <span>•</span>
               <button
                 onClick={onOpenMathModal}
-                className="text-emerald-400 hover:underline flex items-center gap-1 font-bold"
+                className="px-2 py-0.5 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 text-[11px] font-bold flex items-center gap-1 transition-all"
               >
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Math Rigor Audit
+                <Calculator className="w-3 h-3 text-emerald-400" /> Financial Rigor Audit
               </button>
             </div>
           </div>
@@ -144,12 +201,22 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
 
       {/* 3. MAIN TAB CONTENT AREA */}
       <div className="flex-1 min-h-0">
+        {activeTab === 'skills' && (
+          <div className="h-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+            <AiSkillsHub
+              watchlist={watchlist}
+              currentTicker={currentTicker}
+              onSelectTicker={onSelectTicker}
+            />
+          </div>
+        )}
+
         {activeTab === 'research' && (
           <div className="space-y-4 animate-fade-in">
             <MasterScoreCards scores={activeData.masterScores} />
             <MirrorTestBanner mirrorTest={activeData.mirrorTest} />
             <ValuationSummary valuation={activeData.valuation} />
-            <MemoReader markdownContent={activeData.markdownContent} ticker={activeData.ticker} />
+            <MemoReader markdownContent={activeData.markdownContent} ticker={activeData.ticker} onOpenMathModal={onOpenMathModal} />
           </div>
         )}
 
@@ -162,11 +229,11 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
         )}
 
         {activeTab === 'drift' && (
-          <ThesisDriftView driftItems={mockThesisDriftData} />
+          <ThesisDriftView driftItems={activeDriftItems} />
         )}
 
         {activeTab === 'pulse' && (
-          <NewsPulseView pulseItems={mockNewsPulseData} />
+          <NewsPulseView pulseItems={activePulseItems} />
         )}
 
         {activeTab === 'journal' && (

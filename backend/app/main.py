@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 
-from app.database import get_db_watchlist, add_db_watchlist, remove_db_watchlist
+from app.database import get_db_watchlist, add_db_watchlist, remove_db_watchlist, clear_skill_cache
 from app.services.data_fetcher import fetch_live_quote, fetch_live_news
 from app.services.financial_rigor import verify_market_cap
 from app.services.sector_valuation import (
@@ -19,6 +19,7 @@ from app.services.sector_valuation import (
 )
 from app.services.research_engine import evaluate_4masters
 from app.services.unified_screener import calculate_magna_score
+from app.services.skill_engine import get_skill_categories, execute_skill_runner
 
 app = FastAPI(
     title="Institutional PMS API",
@@ -44,6 +45,14 @@ class ResearchRequest(BaseModel):
 
 class WatchlistModifyRequest(BaseModel):
     ticker: str
+
+
+class SkillExecuteRequest(BaseModel):
+    skill_id: str
+    ticker: str
+    params: Optional[dict] = None
+    force_refresh: Optional[bool] = False
+
 
 
 @app.get("/")
@@ -317,3 +326,33 @@ def get_universal_screener():
         })
 
     return {"status": "success", "count": len(candidates), "candidates": candidates}
+
+
+# AI BERKSHIRE SKILLS HUB ENDPOINTS
+@app.get("/api/v1/skills/categories")
+def get_skills_categories_api():
+    return {
+        "status": "success",
+        "categories": get_skill_categories()
+    }
+
+
+@app.post("/api/v1/skills/execute")
+def execute_skill_api(req: SkillExecuteRequest):
+    result = execute_skill_runner(
+        skill_id=req.skill_id,
+        ticker=req.ticker,
+        params=req.params or {},
+        force_refresh=req.force_refresh
+    )
+    return {
+        "status": "success",
+        "result": result
+    }
+
+
+@app.post("/api/v1/skills/clear-cache")
+def clear_skill_cache_api(skill_id: Optional[str] = None, ticker: Optional[str] = None):
+    clear_skill_cache(skill_id, ticker)
+    return {"status": "success", "message": "Skill execution cache cleared"}
+

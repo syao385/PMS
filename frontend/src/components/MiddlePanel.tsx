@@ -9,6 +9,7 @@ import { CompareView } from './CompareView';
 import { ThesisDriftView } from './ThesisDriftView';
 import { NewsPulseView } from './NewsPulseView';
 import { JournalingView } from './JournalingView';
+import { AiSkillsHub } from './AiSkillsHub';
 import {
   FileText,
   Filter,
@@ -19,13 +20,14 @@ import {
   TrendingUp,
   TrendingDown,
   Building2,
-  Calculator
+  Calculator,
+  Sparkles
 } from 'lucide-react';
 
 interface MiddlePanelProps {
   currentTicker: string;
-  activeTab: 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal';
-  setActiveTab: (tab: 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal') => void;
+  activeTab: 'skills' | 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal';
+  setActiveTab: (tab: 'skills' | 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal') => void;
   activeData: ResearchMemoData;
   symbolsData: Record<string, ResearchMemoData>;
   watchlist: string[];
@@ -34,6 +36,7 @@ interface MiddlePanelProps {
   mockNewsPulseData: NewsPulseItem[];
   mockJournalData: TradeJournalEntry[];
   onOpenMathModal: () => void;
+  onSelectTicker: (ticker: string) => void;
 }
 
 export const MiddlePanel: React.FC<MiddlePanelProps> = ({
@@ -47,9 +50,11 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
   mockThesisDriftData,
   mockNewsPulseData,
   mockJournalData,
-  onOpenMathModal
+  onOpenMathModal,
+  onSelectTicker
 }) => {
   const navTabs = [
+    { id: 'skills', label: 'AI Berkshire Hub', icon: Sparkles },
     { id: 'research', label: 'AI Research Memo', icon: FileText },
     { id: 'scanner', label: 'Universal Scanner', icon: Filter },
     { id: 'compare', label: 'Cross-Symbol Matrix', icon: Layers },
@@ -57,6 +62,7 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
     { id: 'pulse', label: 'News Pulse Attribution', icon: Activity },
     { id: 'journal', label: 'Trade Journal', icon: BookOpen }
   ] as const;
+
 
   // Dynamic Thesis Drift generator for active ticker if missing
   const activeDriftItems: ThesisDriftItem[] = (() => {
@@ -196,6 +202,16 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
 
       {/* 3. MAIN TAB CONTENT AREA */}
       <div className="flex-1 min-h-0">
+        {activeTab === 'skills' && (
+          <div className="h-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+            <AiSkillsHub
+              watchlist={watchlist}
+              currentTicker={currentTicker}
+              onSelectTicker={onSelectTicker}
+            />
+          </div>
+        )}
+
         {activeTab === 'research' && (
           <div className="space-y-4 animate-fade-in">
             <MasterScoreCards scores={activeData.masterScores} />
@@ -204,6 +220,7 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
             <MemoReader markdownContent={activeData.markdownContent} ticker={activeData.ticker} onOpenMathModal={onOpenMathModal} />
           </div>
         )}
+
 
         {activeTab === 'scanner' && (
           <UnifiedScannerView scannerItems={mockUnifiedScannerData} />

@@ -25,12 +25,13 @@ export function App() {
   const [currentTicker, setCurrentTicker] = useState<string>('NVDA');
   const [watchlist, setWatchlist] = useState<string[]>(['NVDA', 'AAPL', 'MSFT', 'TSLA', 'PLTR', 'MU', 'IONQ', 'NBIS']);
   const [activeTab, setActiveTab] = useState<
-    'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal'
-  >('research');
+    'skills' | 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal'
+  >('skills');
   
   const [symbolsData, setSymbolsData] = useState<Record<string, ResearchMemoData>>(mockTickerData);
   const [isMathModalOpen, setIsMathModalOpen] = useState<boolean>(false);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+
 
   // Load Watchlist from SQLite Database on Initial Mount
   useEffect(() => {
@@ -337,7 +338,9 @@ ${name} (${ticker}) operates in the **${industryName}** sector with live market 
             mockNewsPulseData={mockNewsPulseData}
             mockJournalData={mockJournalData}
             onOpenMathModal={() => setIsMathModalOpen(true)}
+            onSelectTicker={(t) => setCurrentTicker(t)}
           />
+
         </section>
 
         {/* RIGHT PANEL */}

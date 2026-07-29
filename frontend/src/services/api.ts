@@ -104,3 +104,55 @@ export async function fetchLiveNews(ticker: string) {
   }
   return null;
 }
+
+export async function fetchSkillCategories() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/skills/categories`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.categories;
+    }
+  } catch (err) {
+    console.warn('Backend skill categories fetch failed', err);
+  }
+  return null;
+}
+
+export async function executeSkill(skillId: string, ticker: string, params: Record<string, any> = {}, forceRefresh: boolean = false) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/skills/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        skill_id: skillId,
+        ticker,
+        params,
+        force_refresh: forceRefresh
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.result;
+    }
+  } catch (err) {
+    console.warn(`Backend skill execution failed for ${skillId} on ${ticker}`, err);
+  }
+  return null;
+}
+
+export async function clearSkillCache(skillId?: string, ticker?: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/skills/clear-cache`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ skill_id: skillId, ticker })
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn('Backend clear skill cache failed', err);
+  }
+  return null;
+}
+
