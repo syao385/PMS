@@ -132,8 +132,6 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
     const sym = ticker.toUpperCase().trim() || 'NVDA';
     const compName = sym === 'NBIS' ? 'Nebius Group N.V.' : (sym === 'VRT' ? 'Vertiv Holdings Co' : (sym === 'BE' ? 'Bloom Energy Corporation' : `${sym} Corporation`));
     const priceVal = sym === 'NBIS' ? 24.50 : (sym === 'VRT' ? 84.50 : (sym === 'BE' ? 14.80 : 125.00));
-    const revVal = sym === 'NBIS' ? 145.20 : (sym === 'VRT' ? 2120.00 : (sym === 'BE' ? 305.03 : 850.00));
-    const epsVal = sym === 'NBIS' ? -0.12 : (sym === 'VRT' ? 0.93 : (sym === 'BE' ? 0.18 : 1.25));
 
     return {
       skill_id: skillId,
