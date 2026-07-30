@@ -1,115 +1,96 @@
-# Implementation Plan: Institutional US Equities/ETFs Long/Short PMS (`institutional-pms`)
+# 🏛️ Revised Implementation Plan: UI Architect Streamlining & Duplication Elimination
 
-This document details the architecture for `institutional-pms`, integrating qualitative AI fundamental research, sector-adaptive intrinsic valuation, StockBee MAGNA Episodic Pivot (EP) catalyst screening, embedded TradingView technical charting, and market-neutral quantitative risk optimization.
+## Executive Summary
 
----
-
-## 1. Architectural Enhancements & Key Decisions
-
-| Dimension | Technical Specification |
-| :--- | :--- |
-| **Location** | `c:\Users\jfan\Documents\institutional-pms` |
-| **UI Design System** | Premium Quantitative Styling inspired by `@MarketTerminal` & `@GammaGexTrading` (Deep navy `#070913`, glassmorphism `rgba(15, 18, 36, 0.75)`, fonts `'Outfit'` + `'Plus Jakarta Sans'`, neon glow accents, collapsible sidebar navigation, status pulse indicators) |
-| **Unified Scanner** | **Merged Quality & Technical EP Scanner**: Single unified menu combining fundamental quality criteria (ROIC $\ge 15\%$, Debt/Equity $\le 1.0$, Moat Score $\ge 4.0$) with StockBee MAGNA EP triggers. |
-| **Embedded TradingView Chart** | **In-Page Embedded Technical Chart**: TradingView interactive chart embedded directly inside the Universal Scanner page, dynamically switching symbols upon row selection. |
-| **MAGNA Earnings Play Integration** | **StockBee MAGNA Criteria** integrated into `/earnings-review` & `/earnings-team` skills: **M**omentum ($\ge 8\%$ gap), **A**cceleration ($\ge 3.0\times$ RVOL), **G**ap Clearance, **N**ews/Earnings surprise ($\ge 15\%$), **A**ccumulation (HOD close ratio $\ge 85\%$). |
-| **Intrinsic Valuation Engine** | **Sector-Adaptive Framework**: Automatically routes tickers to GICS sector models (Growth/SaaS $\rightarrow$ Rule of 40 & SBC-Adjusted FCF; Value/Financials $\rightarrow$ DDM & ROE-Ke; Tech/Hardware $\rightarrow$ DCF & EV/EBITDA). |
-| **Portfolio Management** | Symbol Add/Remove CRUD, Watchlist state management, Cross-Symbol Side-by-Side Matrix. |
+Based on your feedback, we have conducted a full **UI Architect Code Review** to eliminate duplicated features, consolidate overlapping functionalities, and streamline the user interface for institutional efficiency.
 
 ---
 
-## 2. System Architecture
+## I. Functional Duplication Analysis & Consolidation Plan
+
+### 1. Thesis Drift Delta (`/thesis-drift`) vs. Earnings Review (`/earnings-review`)
+- **Audit Finding**: **DUPLICATE**. 
+- In [skill_engine.py](file:///c:/Users/jfan/Documents/institutional-pms/backend/app/services/skill_engine.py), `/earnings-review` already performs multi-quarter SEC filing comparison in **Step 5 (4-Qtr Benchmark Table)** and updates the thesis stance in **Step 6 Question 2 (Thesis Impact: Reinforced vs Weakened)**.
+- **Streamlining Decision**: Consolidate quarterly thesis drift tracking directly inside `/earnings-review` (Step 5 & Q2) and `/portfolio-review`. Remove standalone duplicate tab.
+
+---
+
+### 2. News Pulse Attribution (`/news-pulse`) vs. Earnings Review (`/earnings-review`)
+- **Audit Finding**: **DUPLICATE**.
+- In [skill_engine.py](file:///c:/Users/jfan/Documents/institutional-pms/backend/app/services/skill_engine.py), `/earnings-review` already incorporates the **💡 AI 财报与股价偏离因果解构 (AI Discrepancy & Price Action Attribution)** block in Step 6, which attributes post-earnings price volatility across 4 institutional vectors (Fundamental Whisper Miss, Multiple Compression, Order Backlog, and CapEx Lead-Lag).
+- **Streamlining Decision**: Keep rapid price move attribution unified inside `/earnings-review` Step 6 and `/portfolio-review`.
+
+---
+
+### 3. Removal of 8-Step UI Sub-Filter Buttons in `AiSkillsHub.tsx`
+- **Audit Finding**: **REDUNDANT UI CLUTTER**.
+- In [AiSkillsHub.tsx](file:///c:/Users/jfan/Documents/institutional-pms/frontend/src/components/AiSkillsHub.tsx), the 8 sub-filter buttons (`Step 1: Primary Data`, `Step 2: Core Financial Tables`, ... `Step 8: Financial Audit Log`) force the user to click separate buttons to slice the report, duplicating the full document view.
+- **Streamlining Decision**: **Remove the 8-Step sub-filter bar entirely**. Render the complete 8-step primary source review in a single, publication-grade, seamless document flow.
+
+---
+
+## II. Streamlined UI Architecture Comparison
 
 ```mermaid
 graph TD
-    subgraph "Frontend Layer (React + Vite + GammaGex / MarketTerminal UI)"
-        Sidebar[Collapsible Sidebar Nav]
-        ResearchView[4-Master Research Memo & Mirror Test]
-        CompareView[Cross-Symbol Comparative Matrix]
-        
-        subgraph "Unified Universal Scanner Page"
-            ScannerGrid[Merged Quality & MAGNA EP Screener Table]
-            EmbeddedChart[Embedded TradingView Technical Chart]
-            MAGNAPanel[MAGNA 5-Point Earnings Catalyst Breakdown]
-        end
-        
-        LedgerView[Portfolio Watchlist & Trade Journal]
+    subgraph Legacy Architecture (Redundant & Cluttered)
+        L_Tabs["7 Top Tabs: Skills | Memo | Scanner | Compare | Thesis Drift (DUP) | News Pulse (DUP) | Journal"]
+        L_Hub["AiSkillsHub UI"] --> L_Steps["8 Duplicate Step Buttons: [Step 1] [Step 2] ... [Step 8]"]
     end
 
-    subgraph "Backend Service Layer (Python FastAPI)"
-        API[FastAPI Gateway]
-        
-        subgraph "Phase 1: AI Research & Intrinsic Valuation"
-            GeminiAdapter[Gemini 3.6 Multi-Agent Service]
-            MasterEngine[4-Master Methodologies: Buffett/Munger/Duan/Li Lu]
-            SectorValuation[Sector-Adaptive Valuation Solver]
-            DecimalRigor[Decimal.Decimal Math Audit Module]
-        end
-        
-        subgraph "Phase 2: Quant Risk & Unified MAGNA Screener"
-            MAGNA_Engine[StockBee MAGNA EP & Quality Screener]
-            OptEngine[PyPortfolioOpt Market-Neutral Long/Short]
-            TV_Adapter[TradingView MCP Adapter]
-        end
-        
-        subgraph "Phase 3: Portfolio Ledger & Journal"
-            DB[(SQLite Persistence)]
-            WatchlistManager[Watchlist & Symbol CRUD]
-            JournalLogger[Trade Rationale Audit Log]
-        end
+    subgraph Streamlined Institutional Architecture (Clean & Non-Redundant)
+        S_Tabs["5 Clean Workspaces: 📊 Skills Hub | 📄 Research Memo | 🔍 Universal Screener | 🏛️ Portfolio & Risk Review | 📓 Trade Journal"]
+        S_Hub["AiSkillsHub (/earnings-review)"] --> S_Doc["Single Seamless Publication-Grade Document<br/>(Clean Step 1 -> Step 8 Flow)"]
     end
-
-    Sidebar --> ResearchView
-    Sidebar --> CompareView
-    Sidebar --> ScannerGrid
-    ScannerGrid --> EmbeddedChart
-    API --> GeminiAdapter
-    API --> SectorValuation
-    API --> MAGNA_Engine
-    API --> TV_Adapter
-    API --> DB
 ```
 
 ---
 
-## 3. StockBee MAGNA Criteria & Earnings Play Integration
+## Proposed File Changes (Pending Your Approval)
 
-The **MAGNA** framework evaluates post-earnings Episodic Pivots across 5 quantitative and qualitative dimensions:
+### 1. Frontend Streamlining
+#### [MODIFY] [AiSkillsHub.tsx](file:///c:/Users/jfan/Documents/institutional-pms/frontend/src/components/AiSkillsHub.tsx)
+- Remove `EARNINGS_STEPS` array and `activeStepId` filter bar.
+- Render full 8-step earnings report seamlessly without sub-filter button clutter.
 
-$$\text{MAGNA Composite Score} = w_M M + w_A A + w_G G + w_N N + w_{Acc} A_{cc}$$
-
-1. **M — Momentum / Movement**: Opening price gap $\ge 8.0\%$ clearing multi-week resistance.
-2. **A — Acceleration / Volume**: Relative Volume ($\text{RVOL} \ge 3.0\times$ 50-day SMA volume).
-3. **G — Gap & Base Clearance**: Clean breakout above prior consolidation range with zero immediate overhead supply.
-4. **N — News & Earnings Surprise**: Earnings Surprise $\ge +15.0\%$, YoY Revenue Acceleration $\ge +25\%$, and Gross Margin Expansion.
-5. **A — Accumulation & Order Flow**: High-of-Day Close Ratio ($\frac{\text{Close} - \text{Low}}{\text{High} - \text{Low}} \ge 0.85$), proving institutional buy-and-hold order flow.
-
----
-
-## 4. Proposed Implementation Phases
-
-### Phase 1: AI Research, Sector Valuation & MAGNA Earnings Engine
-* Implement `backend/app/services/sector_valuation.py` supporting GICS-specific intrinsic valuation.
-* Implement StockBee MAGNA evaluation inside `/earnings-review` and `/earnings-team` skills.
-* Port `financial_rigor.py` decimal verification.
-
-### Phase 2: Unified Universal Scanner & Embedded TradingView Chart
-* Implement `backend/app/services/unified_screener.py` combining fundamental quality metrics with MAGNA EP criteria.
-* Integrate `tradingview-mcp` service for embedded technical charts inside the Scanner view.
-* Build Market-Neutral Long/Short portfolio optimizer (`PyPortfolioOpt`).
-
-### Phase 3: Portfolio Ledger, Symbol Comparison & UI Polish
-* Implement SQLite database models for watchlists and trade journals (`实盘记录`).
-* Apply `@MarketTerminal` / `@GammaGexTrading` design system across all React components.
-* Build Cross-Symbol Comparison Matrix and Symbol CRUD modals.
+#### [MODIFY] [MiddlePanel.tsx](file:///c:/Users/jfan/Documents/institutional-pms/frontend/src/components/MiddlePanel.tsx)
+- Streamline top navigation tabs into **5 Core Workspaces**:
+  1. 📊 **AI Berkshire Skills Hub**
+  2. 📄 **AI Research Memo** (4-Master Deep Research & Mirror Test)
+  3. 🔍 **Universal Screener** (7-Hard Rule & Magna Scanner)
+  4. 🏛️ **Portfolio & Risk Review** (Multi-Factor Synthesis: Macro + Sector + Sentiment + Technicals + Positions)
+  5. 📓 **Trade Journal** (Institutional Execution Log)
+- Remove standalone `Thesis Drift Delta` and `News Pulse Attribution` tabs from `MiddlePanel.tsx` (their logic is fully consolidated in Skills Hub and Portfolio Review).
 
 ---
 
-## 5. Verification & Test Plan
+### 2. Backend Multi-Factor Integration
+#### [MODIFY] [skill_engine.py](file:///c:/Users/jfan/Documents/institutional-pms/backend/app/services/skill_engine.py)
+- Expand `/portfolio-review` skill to synthesize:
+  - Fundamental 3-Horizon Stance (from `/earnings-review`)
+  - Macro Factors (Rates & CPI Sensitivity)
+  - Sector Rotation Beta
+  - Technical Regimes (200-day SMA, Anchor VWAP, ATR stops)
+  - Portfolio Sizing (Kelly Criterion & max $15\%$ limits)
 
-### Automated Verification
-1. **PyTest Suite**: Verify sector-adaptive valuation formulas, decimal rigor audits, and MAGNA EP screener calculations.
-2. **API Endpoint Verification**: Test `/api/v1/research/analyze`, `/api/v1/screener/universal`, `/api/v1/comparison`, and `/api/v1/watchlist`.
+---
 
-### Manual Verification
-1. **Interactive Prototype Run**: Verify unified scanner filters, dynamic symbol selection updating embedded TradingView chart, MAGNA earnings scores, and side-by-side comparison matrix.
+## User Review & Approval Required
+
+> [!IMPORTANT]
+> **No Code Changes Have Been Made Yet**. Please review and approve these streamlined changes:
+> 1. **Remove 8-Step Sub-Filter Bar** in `AiSkillsHub.tsx` to display one clean, publication-grade earnings report.
+> 2. **Consolidate Thesis Drift & News Pulse** into `/earnings-review` and `/portfolio-review`, streamlining top-level tabs into **5 Core Workspaces**.
+> 3. **Implement Multi-Factor Synthesis** (Macro + Sector + Technicals) inside `/portfolio-review`.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Run `python test_dynamic_q4_matrix.py` to ensure Question 4 strategy matrix branching tests pass.
+- Run `python test_nbis_and_watchlist.py` to ensure cross-symbol data isolation tests pass.
+
+### Manual UI Verification
+- Verify in browser that `AiSkillsHub` renders clean 8-step reports without step filter button clutter.
+- Verify in browser that the top workspace tab bar is streamlined, fast, and responsive.
