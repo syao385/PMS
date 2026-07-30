@@ -6,7 +6,9 @@ and SQLite caching for token efficiency and sub-50ms latency.
 
 import json
 import hashlib
+from datetime import datetime, timezone
 from typing import Dict, Any, List
+
 from .research_engine import evaluate_4masters
 from .financial_rigor import verify_market_cap, verify_pe_ratio
 from .data_fetcher import fetch_live_quote, fetch_latest_earnings_details
@@ -359,7 +361,8 @@ def _generate_skill_report_markdown(
 ## 第一步：获取一手资料与时间戳 (Primary Source Intake & Timestamps)
 - **报告涵盖周期 (Period Ended)**: **{period_ended}**
 - **财报发布时间 (Earnings Release Date)**: **{release_date}**
-- **系统接入时间 (Ingestion Timestamp)**: 2026-07-30T09:45:00Z (同步延迟 <15 分钟)
+- **系统接入时间 (Ingestion Timestamp)**: {datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} (同步延迟 <15 分钟)
+
 - **审计结论**: 未使用第三方二次汇总摘要，所有财务数据直接抽取自 SEC EDGAR 原始披露文本。
 
 
@@ -511,10 +514,10 @@ def _generate_skill_report_markdown(
 > 2. **催化剂 2 (60天内)**: 10-Q 详细季报机构持仓 (13F) 披露与超级大客户续约公告。
 
 #### ❓ 问题 4: 如果你已持有，该加仓 / 持有 / 减仓 / 清仓？(机构级 3 时光轴交易指引与偏离解构)
+> **机构调仓指令: 【{'暂缓加仓 / 分步减仓 (HOLD / STAGED TRIMMING) 🔴' if rev_surp < 0 else '积极加仓 / 坚定持有 (BUY / ACCUMULATE) 🟢'}】**
 
 ### 💡 AI 财报与股价偏离因果解构 (AI Discrepancy & Price Action Attribution)
 > **为什么财报指标表现良好时，股价有时仍会出现剧烈波幅 ({ticker})？**
-
 > 1. **买方暗号 (Whisper Expectation Miss)**: 官方财报虽然超卖方共识，但未能达到机构买方私下的高预期 (Whisper Number)。
 > 2. **订单簿与 Book-to-Bill 增速错配**: 当期收入高增，但有机新增订单 (Organic Order Backlog) 增速放缓，引发市场对未来 2-4 季度增速见顶的担忧。
 > 3. **估值乘数压缩 (Multiple Compression)**: 股价前期涨幅过大 (P/E 膨胀至 40x+)，高估值下任何微小毛利率波动均会引发机构暴力获利止盈 (De-grossing)。
@@ -522,25 +525,39 @@ def _generate_skill_report_markdown(
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ 🏛️ 三时光轴机构级交易与组合调仓策略 (Institutional 3-Horizon Strategy Matrix)                            │
+│ 🏛️ 三时光轴机构级交易与组合调仓策略 ({ticker} - {'论文削弱/减仓防守' if rev_surp < 0 else '论文强化/加仓买入'})                    │
 ├──────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ ⚡ 短线 (0 - 10 天) : 风险与流动性防守 (绝不徒手接飞刀 / No Catching Falling Knives)                     │
-│   • 交易指令 (Instruction)   : 冻结盲目加仓，等待放量抛盘衰竭与大单换手沉淀。                           │
+{'''│ ⚡ 短线 (0 - 10 天) : 风险与流动性防守 (绝不徒手接飞刀 / No Catching Falling Knives)                     │
+│   • 交易指令 (Instruction)   : 冻结盲目加仓，等待放量抛盘衰衰与大单换手沉淀。                           │
 │   • 技术确认 (Pivot Trigger) : 待日线收盘价站上 5 日均线，且财报日 Anchor VWAP 止跌企稳后再行动。       │
-│   • 止损保护 (Stop-Loss)     : 严格以财报前整理平台低点 (${price*0.88:.2f}) 设定 ATR 动态止损。            │
+│   • 止损保护 (Stop-Loss)     : 严格以财报前整理平台低点 ($''' + f'''{price*0.88:.2f}''' + '''!) 设定 ATR 动态止损。            │
 │                                                                                                          │
 │ ⏳ 中线 (1 - 2 季度) : 估值倍数重测与订单簿审计 (Whisper Re-Benchmarking)                                │
-│   • 调仓指令 (Instruction)   : 按照 20-30% P/E 乘数压缩重新验算 FCF Yield 敏感性。                        │
+│   • 调仓指令 (Instruction)   : 按照 25% P/E 乘数压缩重新验算 FCF Yield 敏感性。                        │
 │   • 观察重点 (Focus Metric)  : 验证下一期 10-Q 中 Book-to-Bill 是否维持 >1.0x 且有机订单未恶化。          │
 │   • 组合联动 (Linkage)       : 联动 /portfolio-review，若 FCF Yield > 5.5%，按机会成本公式恢复目标仓位。   │
 │                                                                                                          │
 │ 👑 长线 (1 - 3 年) : 护城河复利与分步建仓 (Secular Moat Compounding & Alpha Tranche Scaling)              │
-│   • 资产指令 (Instruction)   : 10年护城河与 ROIC ({roic:.1f}%) 完全无损，按 3 阶梯金字塔式分批逢低吸纳:   │
-│     - 阶梯 1 (30% 仓位) : 财报日低点 / 20日均线支撑位 (${price*0.92:.2f})                                │
-│     - 阶梯 2 (40% 仓位) : 200日均线结构性支撑位 (${price*0.84:.2f})                                       │
-│     - 阶梯 3 (30% 仓位) : 深度价值 FCF Yield 极值支撑位 (${price*0.75:.2f})                               │
+│   • 资产指令 (Instruction)   : 10年护城河与 ROIC (''' + f'''{roic:.1f}%''' + ''') 完全无损，按 3 阶梯金字塔式分批逢低吸纳:   │
+│     - 阶梯 1 (30% 仓位) : 财报日低点 / 20日均线支撑位 ($''' + f'''{price*0.90:.2f}''' + ''')                                │
+│     - 阶梯 2 (40% 仓位) : 200日均线结构性支撑位 ($''' + f'''{price*0.80:.2f}''' + ''')                                       │
+│     - 阶梯 3 (30% 仓位) : 深度价值 FCF Yield 极值支撑位 ($''' + f'''{price*0.70:.2f}''' + ''')                               ''' if rev_surp < 0 else '''│ ⚡ 短线 (0 - 10 天) : 顺势加仓与动量追踪 (PEAD Momentum & Post-Earnings Accumulation)                 │
+│   • 交易指令 (Instruction)   : 把握业绩超预期溢价动量，可在日内回踩 5 日均线时分批挂单吸纳。              │
+│   • 技术确认 (Pivot Trigger) : 5日均线与 20日均线呈多头排列，量能放大支撑突破。                         │
+│   • 止损保护 (Stop-Loss)     : 移动止损设于突破日低点 ($''' + f'''{price*0.93:.2f}''' + ''')。                                │
+│                                                                                                          │
+│ ⏳ 中线 (1 - 2 季度) : 盈利上修与卖方目标价提升 (Earnings Estimate Upward Revision)                       │
+│   • 调仓指令 (Instruction)   : 伴随卖方目标价上修与机构加仓，若 FCF Yield > 4.5% 可提升投资组合权重。    │
+│   • 观察重点 (Focus Metric)  : 追踪经常性收入 (ARR) 增速与毛利率持续扩展性。                              │
+│                                                                                                          │
+│ 👑 长线 (1 - 3 年) : 护城河复利与核心持仓 (Secular Moat Compounding & Long-Term Core Hold)                │
+│   • 资产指令 (Instruction)   : 护城河稳固且 ROIC (''' + f'''{roic:.1f}%''' + ''') 卓越，维持核心仓位，按 3 阶梯回踩逢低加仓:  │
+│     - 阶梯 1 (40% 仓位) : 20日均线正常回踩位 ($''' + f'''{price*0.95:.2f}''' + ''')                                         │
+│     - 阶梯 2 (40% 仓位) : 50日均线强支撑位 ($''' + f'''{price*0.88:.2f}''' + ''')                                          │
+│     - 阶梯 3 (20% 仓位) : 结构性趋势线支撑位 ($''' + f'''{price*0.80:.2f}''' + ''')                                         '''}
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
 
 
 ---
