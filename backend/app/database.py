@@ -31,9 +31,14 @@ def init_db():
     cursor.execute("SELECT COUNT(*) FROM watchlist")
     count = cursor.fetchone()[0]
     if count == 0:
-        default_symbols = ['NVDA', 'AAPL', 'MSFT', 'TSLA', 'PLTR', 'MU', 'IONQ', 'NBIS']
+        default_symbols = ['NVDA', 'AAPL', 'MSFT', 'TSLA', 'PLTR', 'MU', 'IONQ', 'NBIS', 'VRT', 'BE']
         for sym in default_symbols:
             cursor.execute("INSERT OR IGNORE INTO watchlist (ticker) VALUES (?)", (sym,))
+    else:
+        # Guarantee VRT and BE are always present in watchlist
+        for sym in ['VRT', 'BE']:
+            cursor.execute("INSERT OR IGNORE INTO watchlist (ticker) VALUES (?)", (sym,))
+
 
     # Table for AI Berkshire Skill Executions Cache
     cursor.execute("""

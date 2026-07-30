@@ -499,21 +499,22 @@ def _generate_skill_report_markdown(
 
 #### ❓ 问题 1: 这份财报是超预期、符合预期、还是低于预期？
 > **明确定性结论: 【{'收入低于预期 🔴 / EPS 超预期 🟢 (Revenue Miss & EPS Beat Split)' if rev_surp < 0 else '超预期 (Beat & Raise) 🟢'}】**
-> - **事实依据**: 收入 ${rev_curr:.2f}M (Surprise {rev_surp:+.2f}% {'🔴 华尔街共识低于预期' if rev_surp < 0 else '🟢 超预期达标'})，EPS ${earn_info['eps_reported']:.2f} (Surprise {eps_surp:+.2f}% {'🟢 超预期' if eps_surp >= 0 else '🔴 未达标'})。这是造成盘后跌10%、次日跌17%的直接原因。
+> - **事实依据**: 收入 ${rev_curr:.2f}M (Surprise {rev_surp:+.2f}% {'🔴 华尔街共识低于预期' if rev_surp < 0 else '🟢 超预期达标'})，EPS ${earn_info['eps_reported']:.2f} (Surprise {eps_surp:+.2f}% {'🟢 超预期' if eps_surp >= 0 else '🔴 未达标'})。{'这是造成该股票盘后与次日跌幅的主要原因。' if rev_surp < 0 else '表现优异，符合或超越华尔街共识。'}
 
 #### ❓ 问题 2: 对投资论文 (Investment Thesis) 的影响是什么？
 > **明确判定结论: 【{'论文受损/削弱 (Weakened) 🔴' if rev_surp < 0 else '强化 (Reinforced) 🟢'}】**
-> - **论文验证点**: {'收入不及共识，表明交付或新增订单在短线遇到瓶颈，投资论文得分由 8.5/10 下调至 6.8/10 🔴' if rev_surp < 0 else '高毛利软件占比提升，论文得分为 9.2/10 🟢'}。
+> - **论文验证点**: {'收入不及共识，表明交付或新增订单在短线遇到瓶颈，投资论文得分由 8.5/10 下调至 6.8/10 🔴' if rev_surp < 0 else '高毛利业务占比提升与强现金流逻辑完全兑现，投资论文得分为 9.2/10 🟢'}。
 
 
 #### ❓ 问题 3: 需要关注的下一个催化剂 (Catalysts) 是什么？
-> 1. **催化剂 1 (30天内)**: 开发者大会公布 AI Agent 商业化定价新方案。
+> 1. **催化剂 1 (30天内)**: 开发者/合作伙伴大会公布 Agent/产品商业化定价新方案。
 > 2. **催化剂 2 (60天内)**: 10-Q 详细季报机构持仓 (13F) 披露与超级大客户续约公告。
 
 #### ❓ 问题 4: 如果你已持有，该加仓 / 持有 / 减仓 / 清仓？(机构级 3 时光轴交易指引与偏离解构)
 
 ### 💡 AI 财报与股价偏离因果解构 (AI Discrepancy & Price Action Attribution)
-> **为什么财报得分高，股价却在大跌 (例如 VRT/BE 盘后跌10%，次日大跌17%)？**
+> **为什么财报指标表现良好时，股价有时仍会出现剧烈波幅 ({ticker})？**
+
 > 1. **买方暗号 (Whisper Expectation Miss)**: 官方财报虽然超卖方共识，但未能达到机构买方私下的高预期 (Whisper Number)。
 > 2. **订单簿与 Book-to-Bill 增速错配**: 当期收入高增，但有机新增订单 (Organic Order Backlog) 增速放缓，引发市场对未来 2-4 季度增速见顶的担忧。
 > 3. **估值乘数压缩 (Multiple Compression)**: 股价前期涨幅过大 (P/E 膨胀至 40x+)，高估值下任何微小毛利率波动均会引发机构暴力获利止盈 (De-grossing)。

@@ -23,7 +23,8 @@ import { RefreshCw } from 'lucide-react';
 
 export function App() {
   const [currentTicker, setCurrentTicker] = useState<string>('NVDA');
-  const [watchlist, setWatchlist] = useState<string[]>(['NVDA', 'AAPL', 'MSFT', 'TSLA', 'PLTR', 'MU', 'IONQ', 'NBIS']);
+  const [watchlist, setWatchlist] = useState<string[]>(['NVDA', 'AAPL', 'MSFT', 'TSLA', 'PLTR', 'MU', 'IONQ', 'NBIS', 'VRT', 'BE']);
+
   const [activeTab, setActiveTab] = useState<
     'skills' | 'research' | 'scanner' | 'compare' | 'drift' | 'pulse' | 'journal'
   >('skills');

@@ -129,23 +129,29 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
 
   // Helper fallback generator if backend is delayed
   const buildFallbackResult = (ticker: string, skillId: string) => {
-    const sym = ticker.toUpperCase().trim() || 'BE';
+    const sym = ticker.toUpperCase().trim() || 'NVDA';
+    const compName = sym === 'NBIS' ? 'Nebius Group N.V.' : (sym === 'VRT' ? 'Vertiv Holdings Co' : (sym === 'BE' ? 'Bloom Energy Corporation' : `${sym} Corporation`));
+    const priceVal = sym === 'NBIS' ? 24.50 : (sym === 'VRT' ? 84.50 : (sym === 'BE' ? 14.80 : 125.00));
+    const revVal = sym === 'NBIS' ? 145.20 : (sym === 'VRT' ? 2120.00 : (sym === 'BE' ? 305.03 : 850.00));
+    const epsVal = sym === 'NBIS' ? -0.12 : (sym === 'VRT' ? 0.93 : (sym === 'BE' ? 0.18 : 1.25));
+
     return {
       skill_id: skillId,
       ticker: sym,
-      company_name: sym === 'BE' ? 'Bloom Energy Corporation' : `${sym} Corporation`,
-      sector: 'Industrials / Technology',
-      current_price: 164.88,
-      price_change_24h: -1.25,
+      company_name: compName,
+      sector: sym === 'NBIS' ? 'Technology / AI Infrastructure' : 'Industrials / Technology',
+      current_price: priceVal,
+      price_change_24h: 1.25,
       is_cached: true,
       params: { quarter: selectedQuarter },
       financial_rigor: {
-        market_cap_formatted: '$46,899,106,344.00',
+        market_cap_formatted: `$${(priceVal * 1.2e8).toLocaleString()}`,
         market_cap_passed: true,
-        pe_ratio_formatted: '33.94x',
+        pe_ratio_formatted: '28.5x',
         pe_ratio_passed: true,
         discrepancy_pct: 0.0
       },
+
       master_scores: {
         duan: { name: 'Duan Yongping', avatar: '⚡', philosophy: 'Business Essence', score: 3.8, keyQuote: `Evaluate whether ${sym} fits within your circle of competence.` },
         buffett: { name: 'Warren Buffett', avatar: '👑', philosophy: 'Moat & ROIC', score: 3.2, keyQuote: 'Economic moat supported by capital efficiency & free cash flow.' },
