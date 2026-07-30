@@ -45,8 +45,20 @@ def init_db():
         )
     """)
 
+    # Table for Earnings Review Quarterly History Database
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS earnings_review_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ticker TEXT NOT NULL,
+            quarter TEXT NOT NULL,
+            response_json TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     conn.commit()
     conn.close()
+
 
 
 def get_db_watchlist() -> List[str]:
@@ -137,4 +149,20 @@ def clear_skill_cache(skill_id: str = None, ticker: str = None):
         cursor.execute("DELETE FROM skill_execution_cache")
     conn.commit()
     conn.close()
+
+
+def save_earnings_review_history(ticker: str, quarter: str, response_json: str):
+    """
+    Saves an earnings review report into earnings_review_history database table automatically every quarter.
+    """
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO earnings_review_history (ticker, quarter, response_json)
+        VALUES (?, ?, ?)
+    """, (ticker.upper().strip(), quarter, response_json))
+    conn.commit()
+    conn.close()
+
 
