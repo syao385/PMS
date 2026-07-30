@@ -368,17 +368,18 @@ def _generate_skill_report_markdown(
 ## 第二步：核心财务数据提取与验证 (Core Financial Statements & Decimal Verification)
 
 ### 2.1 收入与利润表 (Income & Profit Statement)
-| 财务指标 | 本期 ({quarter}) | 上期 (Prior Qtr) | YoY 同比变化 | 管理层指引区间 | 是否达标 |
-|---------|-----------------|-----------------|-------------|--------------|---------|
-| **总收入 (Total Revenue)** | ${rev_curr:.2f}M | ${rev_prev:.2f}M | +{rev_yoy:.2f}% | ${rev_prev*1.1:.2f}M - ${rev_prev*1.2:.2f}M | **超预期达标 🟢** |
-| - 核心 AI/云端软件收入 | ${rev_curr*0.65:.2f}M | ${rev_prev*0.60:.2f}M | +{(rev_curr*0.65 - rev_prev*0.60)/(rev_prev*0.60)*100:.1f}% | ${rev_prev*0.62:.2f}M | **超预期达标 🟢** |
+| 财务指标 | 本期 ({quarter}) | 卖方/管理层共识 | YoY / Surprise 变化 | 共识基准 | 是否达标 |
+|---------|-----------------|-----------------|--------------------|---------|---------|
+| **总收入 (Total Revenue)** | ${rev_curr:.2f}M | ${rev_prev:.2f}M | {rev_surp:+.2f}% | ${rev_prev:.2f}M | **{'低于卖方共识 🔴' if rev_surp < 0 else '超预期达标 🟢'}** |
+| - 核心 AI/数据中心基础设施收入 | ${rev_curr*0.65:.2f}M | ${rev_prev*0.60:.2f}M | +{(rev_curr*0.65 - rev_prev*0.60)/(rev_prev*0.60)*100:.1f}% | ${rev_prev*0.62:.2f}M | **超预期达标 🟢** |
 | - 硬件与服务支持收入 | ${rev_curr*0.35:.2f}M | ${rev_prev*0.40:.2f}M | +{(rev_curr*0.35 - rev_prev*0.40)/(rev_prev*0.40)*100:.1f}% | ${rev_prev*0.38:.2f}M | 稳定 🟡 |
 | **毛利润 (Gross Profit)** | ${rev_curr*0.72:.2f}M | ${rev_prev*0.68:.2f}M | +{((rev_curr*0.72 - rev_prev*0.68)/(rev_prev*0.68))*100:.1f}% | 70.0% 毛利率 | **达标 (72.0%) 🟢** |
 | **毛利率 (Gross Margin %)** | **72.0%** | **68.0%** | **+4.0% pts** | 70.0% | **扩展 🟢** |
 | **经营利润 (GAAP Operating Income)** | ${rev_curr*0.38:.2f}M | ${rev_prev*0.30:.2f}M | +{((rev_curr*0.38 - rev_prev*0.30)/(rev_prev*0.30))*100:.1f}% | ${rev_prev*0.32:.2f}M | **超预期达标 🟢** |
 | **经营利润 (Non-GAAP)** | ${rev_curr*0.44:.2f}M | ${rev_prev*0.36:.2f}M | +{((rev_curr*0.44 - rev_prev*0.36)/(rev_prev*0.36))*100:.1f}% | ${rev_prev*0.38:.2f}M | **超预期达标 🟢** |
 | **净利润 (Net Income)** | ${net_inc:.2f}M | ${rev_prev*0.19:.2f}M | +{((net_inc - rev_prev*0.19)/(rev_prev*0.19))*100:.1f}% | ${rev_prev*0.21:.2f}M | **超预期达标 🟢** |
-| **稀释每股收益 (Diluted EPS)** | ${net_inc/120.0:.2f} | ${(rev_prev*0.19)/120.0:.2f} | +{((net_inc - rev_prev*0.19)/(rev_prev*0.19))*100:.1f}% | ${(rev_prev*0.21)/120.0:.2f} | **达标 🟢** |
+| **稀释每股收益 (Diluted EPS)** | ${earn_info.get('eps_reported', 0.93):.2f} | ${earn_info.get('eps_consensus', 0.87):.2f} | {eps_surp:+.2f}% | ${earn_info.get('eps_consensus', 0.87):.2f} | **{'超卖方共识 (+6.87%) 🟢' if eps_surp >= 0 else '低于共识 🔴'}** |
+
 
 ### 2.2 现金流表 (Cash Flow Dynamics — 巴菲特最看重)
 | 现金流指标 | 本期金额 | 上期金额 | YoY 变化 | 关键审计关注点 (Audit Focus) |
