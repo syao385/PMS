@@ -264,13 +264,20 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
 #### ❓ 问题 3: 需要关注的下一个催化剂 (Catalysts) 是什么？
 > 1. **催化剂 1**: 30天内开发者大会 Agent 商业化方案。 2. **催化剂 2**: 60天内 13F 机构持仓公布。
 
-#### ❓ 问题 4: 如果你已持有，该加仓 / 持有 / 减仓 / 清仓？(机构级交易指引与组合管理)
-> **分阶段指令**: **增持 / 加仓 (ADD & REBALANCE UP)** — 建议目标仓位由 8.0% 提升至 12.0% (联动 '/portfolio-review' 机会成本公式)。
+#### ❓ 问题 4: 如果你已持有，该加仓 / 持有 / 减仓 / 清仓？(机构级 3 时光轴交易指引与偏离解构)
 
-> **技术面挂单买入**:
-> 1. **Add Stage 1**: 财报跳空后首个回调点 — 20日均线/VWAP 支撑位 ($158.28)。
-> 2. **Add Stage 2**: 突破财报日最高价 ($171.48) 顺势加仓 50%。
-> 3. **止损线**: 跌破整理低点 $148.39 (ATR -10.0%)。
+### 💡 AI 财报与股价偏离因果解构 (AI Discrepancy & Price Action Attribution)
+> **为什么财报得分高，股价却在大跌 (例如 VRT/BE 盘后跌10%，次日大跌17%)？**
+> 1. **买方暗号 (Whisper Expectation Miss)**: 官方财报虽然超卖方共识，但未能达到机构买方私下的高预期 (Whisper Number)。
+> 2. **订单簿与 Book-to-Bill 增速错配**: 当期收入高增，但有机新增订单 (Organic Order Backlog) 增速放缓。
+> 3. **估值乘数压缩 (Multiple Compression)**: 股价前期涨幅过大，高估值下任何微小毛利率波动均会引发机构暴力获利止盈 (De-grossing)。
+> 4. **CapEx 投入与利润率时滞 (CapEx Lead-Lag Effect)**: 大额 AI/基础设施 CapEx 投入在当期压低经营利润率。
+
+> **三时光轴机构级交易与组合调仓策略 (Institutional 3-Horizon Strategy Matrix)**:
+> ⚡ **短线 (0-10天)**: 风险与流动性防守 — **绝不徒手接飞刀**。冻结盲目加仓，等待放量抛盘衰竭、5日均线/财报日 VWAP 止跌企稳后再行动。
+> ⏳ **中线 (1-2季度)**: 估值倍数重测与订单簿审计 — 按 20-30% P/E 压缩重算 FCF Yield。联动 '/portfolio-review'，若 FCF Yield > 5.5%，按机会成本公式恢复目标仓位。
+> 👑 **长线 (1-3年)**: 护城河复利与分步建仓 (Alpha Scaling Tranches) — 3 阶梯买入 ($158.28 / $148.50 / $135.00)。
+
 
 ---
 
