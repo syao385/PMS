@@ -105,7 +105,8 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
   const [customTickerInput, setCustomTickerInput] = useState<string>('');
   const [activeCategoryId, setActiveCategoryId] = useState<string>('earnings_analysis');
   const [activeSkillId, setActiveSkillId] = useState<string>('earnings-review');
-  const [selectedQuarter, setSelectedQuarter] = useState<string>('2026Q1');
+  const [selectedQuarter, setSelectedQuarter] = useState<string>('2026Q2');
+
   const [activeStepId, setActiveStepId] = useState<string>('all');
   
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -415,9 +416,11 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
                 onChange={(e) => setSelectedQuarter(e.target.value)}
                 className="bg-transparent text-xs font-bold text-emerald-400 focus:outline-none cursor-pointer font-mono"
               >
-                <option value="2026Q1" className="bg-[#121824] text-slate-200">2026Q1 (Latest)</option>
+                <option value="2026Q2" className="bg-[#121824] text-slate-200">2026Q2 (Latest)</option>
+                <option value="2026Q1" className="bg-[#121824] text-slate-200">2026Q1</option>
                 <option value="2025Q4" className="bg-[#121824] text-slate-200">2025Q4</option>
                 <option value="2025年报" className="bg-[#121824] text-slate-200">2025 Annual Report</option>
+
               </select>
             </div>
           )}
