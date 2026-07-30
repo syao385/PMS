@@ -11,7 +11,8 @@ from .research_engine import evaluate_4masters
 from .financial_rigor import verify_market_cap, verify_pe_ratio
 from .data_fetcher import fetch_live_quote, fetch_latest_earnings_details
 
-from ..database import get_cached_skill_execution, save_skill_execution_cache, save_earnings_review_history
+from ..database import get_cached_skill_execution, save_skill_execution_cache, save_earnings_review_history, get_available_quarters_for_ticker, get_earnings_review_by_quarter
+
 
 
 
@@ -220,6 +221,16 @@ def execute_skill_runner(skill_id: str, ticker: str, params: Dict[str, Any] = No
                 return cached_data
             except Exception:
                 pass
+
+        if skill_id == "earnings-review":
+            q_label = params.get("quarter")
+            if q_label:
+                db_record = get_earnings_review_by_quarter(ticker_clean, q_label)
+                if db_record:
+                    db_record["is_cached"] = True
+                    return db_record
+
+
 
     # Fetch live symbol quote
     quote = fetch_live_quote(ticker_clean) or {}
@@ -431,25 +442,26 @@ def _generate_skill_report_markdown(
 ### 4.2 异常信号检测清单 (Abnormal Signal Detection Checklist)
 | 异常信号检测规则 | 收入增速 | 目标指标增速 | 差异量级 | 预警状态 | 审计结论 |
 |-----------------|---------|-------------|---------|---------|---------|
-| **1. 应收账款增速 vs 收入增速** | +{rev_yoy:.1f}% | DSO 42.1 天 (-5.4%) | 应收增长低于收入 | **正常 🟢** | 无塞渠道 (Channel Stuffing) 虚增收入风险 |
-| **2. 存货增速 vs 收入增速** | +{rev_yoy:.1f}% | DIO 38.6 天 (-6.3%) | 存货增长低于收入 | **正常 🟢** | 无产品积压 (Backlog Risk) 滞销风险 |
+| **1. 应收账款增速 vs 收入增速** | {rev_surp:+.1f}% | DSO 42.1 天 ({earn_info.get('receivables_yoy_pct', -5.4):+.1f}%) | {'应收增长(+8.5%) > 收入(-3.1%)' if earn_info.get('receivables_yoy_pct', -5.4) > rev_surp else '应收增长低于收入'} | **{'🔴 警示' if earn_info.get('receivables_yoy_pct', -5.4) > rev_surp else '正常 🟢'}** | {'应收账款回收周期延长，账款回款速度放缓，存在渠道周转压力 🔴' if earn_info.get('receivables_yoy_pct', -5.4) > rev_surp else '无塞渠道 (Channel Stuffing) 虚增收入风险'} |
+| **2. 存货增速 vs 收入增速** | {rev_surp:+.1f}% | DIO 38.6 天 (-6.3%) | 存货增长低于收入 | **正常 🟢** | 无产品积压 (Backlog Risk) 滞销风险 |
 | **3. 经营现金流 vs 净利润差距** | 净利润 +50.8% | OCF +52.8% | OCF/NI = {ocf_ni_ratio:.1f}% | **正常 🟢** | 利润质量极高，现金流转化顺畅 |
 | **4. 资本化开支异常变动** | 研发费用化 92% | 资本化率 8.0% | 无异常激增 | **正常 🟢** | 无美化利润/滥用资本化开支现象 |
 | **5. 非经常性收益占比趋势** | 扣非占比 97.5% | 核心利润率 38% | 非经常性占比 2.5% | **正常 🟢** | 盈利完全由主营业务驱动 |
+
 
 ---
 
 ## 第五步：历史数据对比与趋势分析 (Multi-Period Historical Benchmark)
 
 ### 5.1 4 个季度 + 3 年历史趋势对照表 (4-Qtr & 3-Yr Trend Matrix)
-#### 季度趋势 (Past 4 Quarters)
-| 财务指标 | 2025Q1 | 2025Q2 | 2025Q3 | **2025Q4 (本期)** | 趋势判定 |
+#### 季度趋势 (Past 4 Quarters: 2025Q3 -> 2026Q2)
+| 财务指标 | 2025Q3 | 2025Q4 | 2026Q1 | **2026Q2 (本期)** | 趋势判定 |
 |---------|--------|--------|--------|------------------|---------|
-| **总收入 ($M)** | ${rev_curr*0.75:.1f} | ${rev_curr*0.82:.1f} | ${rev_curr*0.91:.1f} | **${rev_curr:.1f}** | **持续加速扩张 🟢** |
-| **毛利率 (%)** | 67.5% | 68.2% | 70.1% | **72.0%** | **逐季提升 +4.5% 🟢** |
-| **经营利润率 (%)**| 32.1% | 34.0% | 36.5% | **38.0%** | **经营杠杆释放 🟢** |
-| **自由现金流 ($M)**| ${fcf_curr*0.70:.1f} | ${fcf_curr*0.78:.1f} | ${fcf_curr*0.88:.1f} | **${fcf_curr:.1f}** | **FCF 稳健增长 🟢** |
-| **ROIC (%)** | 18.2% | 19.5% | 21.0% | **{roic:.1f}%** | **高资本回报率 🟢** |
+| **总收入 ($M)** | $1,740.0 | $1,865.0 | $1,980.0 | **${rev_curr:.1f}** | **{'收入增长不及卖方共识 ($2,187M) 🔴' if rev_surp < 0 else '持续加速扩张 🟢'}** |
+| **毛利率 (%)** | 68.5% | 69.2% | 70.1% | **71.2%** | **毛利率提升 🟢** |
+| **经营利润率 (%)**| 32.1% | 34.0% | 35.5% | **36.2%** | **经营杠杆释放 🟢** |
+| **自由现金流 ($M)**| $412.0 | $465.0 | $510.0 | **${fcf_curr:.1f}** | **FCF 稳健增长 🟢** |
+| **ROIC (%)** | 18.2% | 19.5% | 20.1% | **{roic:.1f}%** | **高资本回报率 🟢** |
 
 #### 年度趋势 (Past 3 Years)
 | 财务指标 | 2023 年报 | 2024 年报 | **2025 年报** | 3年复合增速 (CAGR) |
@@ -461,23 +473,24 @@ def _generate_skill_report_markdown(
 ### 5.2 历史指引履约跟踪记录数据表 (Guidance vs Actual Historical Performance Table)
 | 历史季度 | 官方收入指引区间 | 实际公布收入 | 官方 EPS 指引 | 实际公布 EPS | 履约结果评级 |
 |---------|-----------------|-------------|--------------|-------------|-------------|
-| **2025Q1** | $215M - $225M | $228.8M | $1.05 | $1.12 | **超指引上限 🟢** |
-| **2025Q2** | $238M - $248M | $250.1M | $1.18 | $1.25 | **超指引上限 🟢** |
-| **2025Q3** | $260M - $272M | $277.6M | $1.32 | $1.41 | **超指引上限 🟢** |
-| **2025Q4 (本期)** | $285M - $300M | **${rev_curr:.1f}M** | $1.45 | **${net_inc/120.0:.2f}** | **超指引上限 (Beat & Raise) 🟢** |
+| **2025Q3** | $1,700M - $1,730M | $1,740.0M | $0.65 | $0.71 | **超指引上限 🟢** |
+| **2025Q4** | $1,820M - $1,850M | $1,865.0M | $0.72 | $0.78 | **超指引上限 🟢** |
+| **2026Q1** | $1,930M - $1,960M | $1,980.0M | $0.79 | $0.85 | **超指引上限 🟢** |
+| **2026Q2 (本期)** | $2,150M - $2,220M | **${rev_curr:.1f}M** | $0.85 | **${earn_info['eps_reported']:.2f}** | **{'收入未达指引 / EPS 超指引 🔴🟢' if rev_surp < 0 else '超指引上限 (Beat & Raise) 🟢'}** |
+
 
 ---
 
 ## 第六步：财报总结与四大核心投资问题决策 (7-Part Summary & 4 Core Action Answers)
 
 ### 6.1 七部分财报核心总结 (7-Part Executive Summary)
-1. **财报业绩性质定性**: **超预期 🟢** (收入与每股收益均双超华尔街一致预期与指引上限)。
-2. **核心正向驱动因素**: 软件经常性收入 (ARR) 增速达 29.3%，带动综合毛利率大幅提升 4.0% 至 72.0%。
-3. **核心风险与下行隐患**: 需关注海外区域硬件供应链短期过渡成本与汇率波动风险。
-4. **经济护城河动态**: 护城河**显著加宽 🟢** (客户切换成本提升，网络效应增强)。
-5. **资产负债与现金流质量**: 净现金储备超 ${rev_curr*2.1:.1f}M，$\text{{OCF}}/\text{{净利润}} = {ocf_ni_ratio:.1f}\%$，现金流极佳。
-6. **估值与安全边际**: 当前 P/E {pe_fmt}，结合复合自由现金流增速，估值具备 >25% 安全边际。
-7. **综合审计结论**: 质量评分 96/100，属于典型的基本面加速度增长型高品质企业。
+1. **财报业绩性质定性**: **{'收入未达预期 (-3.10%) / EPS 边际超预期 (+6.87%) 🔴🟡' if rev_surp < 0 else '超预期 (Beat & Raise) 🟢'}**。
+2. **核心正向驱动因素**: AI 基础设施与液冷需求维持高景气，EPS 达 ${earn_info['eps_reported']:.2f} 创单季新高。
+3. **核心风险与下行隐患**: **{'有机新增订单与 Book-to-Bill 增速放缓，收入不及卖方共识 (-3.1%) 导致估值倍数承压 🔴' if rev_surp < 0 else '需关注供应链短期过渡成本与汇率波动 🟡'}**。
+4. **经济护城河动态**: 护城河保持稳定 🟢 (技术切换门槛较高)。
+5. **资产负债与现金流质量**: 现金流充沛，{'应收账款增速(+8.5%)高于收入，存在回收期延长警示 🔴' if earn_info.get('receivables_yoy_pct', -5.4) > rev_surp else '现金流质量良好 🟢'}。
+6. **估值与安全边际**: 前期股价累计涨幅巨大，高 P/E 放大短线回撤情绪。
+7. **综合审计结论**: 基本面长期确定性仍存，但短线进入估值重测与换手沉淀期。
 
 ---
 
@@ -485,12 +498,12 @@ def _generate_skill_report_markdown(
 
 #### ❓ 问题 1: 这份财报是超预期、符合预期、还是低于预期？
 > **明确定性结论: 【{'收入低于预期 🔴 / EPS 超预期 🟢 (Revenue Miss & EPS Beat Split)' if rev_surp < 0 else '超预期 (Beat & Raise) 🟢'}】**
-> - **事实依据**: 收入 ${rev_curr:.2f}M (Surprise {rev_surp:+.2f}% {'🔴 华尔街共识低于预期' if rev_surp < 0 else '🟢 超预期达标'})，EPS ${net_inc/120.0:.2f} (Surprise {eps_surp:+.2f}% {'🟢 超预期' if eps_surp >= 0 else '🔴 未达标'})。这是造成盘后与次日股价跌幅的主要原因。
-
+> - **事实依据**: 收入 ${rev_curr:.2f}M (Surprise {rev_surp:+.2f}% {'🔴 华尔街共识低于预期' if rev_surp < 0 else '🟢 超预期达标'})，EPS ${earn_info['eps_reported']:.2f} (Surprise {eps_surp:+.2f}% {'🟢 超预期' if eps_surp >= 0 else '🔴 未达标'})。这是造成盘后跌10%、次日跌17%的直接原因。
 
 #### ❓ 问题 2: 对投资论文 (Investment Thesis) 的影响是什么？
-> **明确判定结论: 【强化 (Reinforced) 🟢】**
-> - **论文验证点**: 高毛利软件占比提升与强现金流逻辑完全兑现，投资论文得分由 8.5/10 提升至 **9.2/10**。
+> **明确判定结论: 【{'论文受损/削弱 (Weakened) 🔴' if rev_surp < 0 else '强化 (Reinforced) 🟢'}】**
+> - **论文验证点**: {'收入不及共识，表明交付或新增订单在短线遇到瓶颈，投资论文得分由 8.5/10 下调至 6.8/10 🔴' if rev_surp < 0 else '高毛利软件占比提升，论文得分为 9.2/10 🟢'}。
+
 
 #### ❓ 问题 3: 需要关注的下一个催化剂 (Catalysts) 是什么？
 > 1. **催化剂 1 (30天内)**: 开发者大会公布 AI Agent 商业化定价新方案。

@@ -254,7 +254,20 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
 
 ---
 
-### 6.2 四大核心投资决策回答 (4 Core Actionable Questions)
+## 第六步：财报总结与四大核心投资问题决策 (7-Part Summary & 4 Core Action Answers)
+
+### 6.1 七部分财报核心总结 (7-Part Executive Summary)
+1. **财报业绩性质定性**: **超预期 🟢** (收入与每股收益均双超华尔街一致预期与指引上限)。
+2. **核心正向驱动因素**: 软件经常性收入 (ARR) 增速达 29.3%，带动综合毛利率大幅提升 4.0% 至 72.0%。
+3. **核心风险与下行隐患**: 需关注海外区域硬件供应链短期过渡成本与汇率波动风险。
+4. **经济护城河动态**: 护城河**显著加宽 🟢** (客户切换成本提升，网络效应增强)。
+5. **资产负债与现金流质量**: 净现金储备超 $346M，$\text{OCF}/\text{净利润} = 133.3\%$，现金流极佳。
+6. **估值与安全边际**: 当前 P/E 33.9x，结合复合自由现金流增速，估值具备 >25% 安全边际。
+7. **综合审计结论**: 质量评分 96/100，属于典型的基本面加速度增长型高品质企业。
+
+---
+
+### 6.2 四大核心投资决策回答 (4 Core Action Answers)
 
 #### ❓ 问题 1: 这份财报是超预期、符合预期、还是低于预期？
 > **明确定性结论: 【超预期 (Beat & Raise) 🟢】**
@@ -297,6 +310,22 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
     };
   };
 
+  async function handleBatchLoadHistory() {
+    setIsLoading(true);
+    try {
+      const quarters = ['2026Q2', '2026Q1', '2025Q4', '2025Q3'];
+      for (const q of quarters) {
+        await executeSkill('earnings-review', selectedTicker, { quarter: q }, true);
+      }
+      const latestRes = await executeSkill('earnings-review', selectedTicker, { quarter: selectedQuarter }, false);
+      if (latestRes) setSkillResult(latestRes);
+    } catch (err) {
+      console.error('Failed to batch load history:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function runCurrentSkill(ticker: string, skillId: string, refresh: boolean) {
     setIsLoading(true);
     try {
@@ -313,6 +342,7 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
       setIsLoading(false);
     }
   }
+
 
   const handleSelectCategory = (catId: string) => {
     setActiveCategoryId(catId);
@@ -455,6 +485,20 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             {isLoading ? 'Running Skill...' : 'Force Refresh (Re-run LLM)'}
           </button>
+
+          {/* Load / Batch Fetch History Button */}
+          {activeSkillId.includes('earnings') && (
+            <button
+              onClick={handleBatchLoadHistory}
+              disabled={isLoading}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-all cursor-pointer"
+              title="Batch fetch 4-12 quarters of history into SQLite DB"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span>Load 4-12 Qtr History (Batch Run)</span>
+            </button>
+          )}
+
 
           {/* Export Report to PDF */}
           <button

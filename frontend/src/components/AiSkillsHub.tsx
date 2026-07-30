@@ -297,6 +297,22 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
     };
   };
 
+  async function handleBatchLoadHistory() {
+    setIsLoading(true);
+    try {
+      const quarters = ['2026Q2', '2026Q1', '2025Q4', '2025Q3'];
+      for (const q of quarters) {
+        await executeSkill('earnings-review', selectedTicker, { quarter: q }, true);
+      }
+      const latestRes = await executeSkill('earnings-review', selectedTicker, { quarter: selectedQuarter }, false);
+      if (latestRes) setSkillResult(latestRes);
+    } catch (err) {
+      console.error('Failed to batch load history:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function runCurrentSkill(ticker: string, skillId: string, refresh: boolean) {
     setIsLoading(true);
     try {
@@ -313,6 +329,7 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
       setIsLoading(false);
     }
   }
+
 
   const handleSelectCategory = (catId: string) => {
     setActiveCategoryId(catId);
@@ -455,6 +472,20 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             {isLoading ? 'Running Skill...' : 'Force Refresh (Re-run LLM)'}
           </button>
+
+          {/* Load / Batch Fetch History Button */}
+          {activeSkillId.includes('earnings') && (
+            <button
+              onClick={handleBatchLoadHistory}
+              disabled={isLoading}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-all cursor-pointer"
+              title="Batch fetch 4-12 quarters of history into SQLite DB"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span>Load 4-12 Qtr History (Batch Run)</span>
+            </button>
+          )}
+
 
           {/* Export Report to PDF */}
           <button

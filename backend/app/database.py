@@ -5,7 +5,9 @@ Persists portfolio watchlist, custom symbols, and trade log state across session
 
 import sqlite3
 import os
-from typing import List
+import json
+from typing import List, Optional, Dict, Any
+
 
 DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "institutional_pms.db"))
 
@@ -164,5 +166,44 @@ def save_earnings_review_history(ticker: str, quarter: str, response_json: str):
     """, (ticker.upper().strip(), quarter, response_json))
     conn.commit()
     conn.close()
+
+
+def get_available_quarters_for_ticker(ticker: str) -> List[str]:
+    """
+    Queries SQLite database for distinct earnings review quarters stored for a ticker.
+    """
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DISTINCT quarter FROM earnings_review_history 
+        WHERE ticker = ? ORDER BY quarter DESC
+    """, (ticker.upper().strip(),))
+    rows = cursor.fetchall()
+    conn.close()
+    return [r[0] for r in rows] if rows else []
+
+
+def get_earnings_review_by_quarter(ticker: str, quarter: str) -> Optional[Dict[str, Any]]:
+    """
+    Retrieves stored earnings review JSON for a specific ticker and quarter from SQLite database.
+    """
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT response_json FROM earnings_review_history
+        WHERE ticker = ? AND quarter = ?
+        ORDER BY created_at DESC LIMIT 1
+    """, (ticker.upper().strip(), quarter))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        try:
+            return json.loads(row[0])
+        except Exception:
+            return None
+    return None
+
 
 
