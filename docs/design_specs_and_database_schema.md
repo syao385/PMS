@@ -257,8 +257,72 @@ CREATE TABLE IF NOT EXISTS shared_news_feeds (
 4. **Macro Economic Benchmarks Endpoint (`GET /api/v1/market-hub/macro-indicators`)**:
    - Dynamically streams real-time figures for `^VIX`, `^GSPC` (S&P 500), `^IXIC` (Nasdaq Composite), `^TNX` (10-Yr Yield), and `CL=F` (Crude Oil).
 
-5. **Institutional Order Flow & Options Sentiment Engine (`GET /api/v1/market-hub/order-flow/{ticker}`)**:
-   - Calculates real-time **Put / Call Options Volume Ratio** from `yf.Ticker(symbol).option_chain()`.
-   - Computes **Dark Pool Accumulation Ratio** and **Liquidity Pressure** from live volume tape relative to 10-day moving average volume.
+### 8.2 Institutional Order Flow & Sentiment Derivation Specifications
+
+The fields in the **INSTITUTIONAL ORDER FLOW & SENTIMENT** widget are derived using real-time data from Alpaca Market Snapshots and Yahoo Finance Options Chains:
+
+1. **Put / Call Options Volume Ratio**:
+   - **Data Source**: Yahoo Finance Options Chain (`yf.Ticker(symbol).option_chain(expiration)`).
+   - **Derivation Formula**:
+     $$\text{P/C Ratio} = \frac{\sum_{i} \text{Put Open Interest}_i}{\sum_{j} \text{Call Open Interest}_j}$$
+   - **Sentiment Thresholds**:
+     - $\text{P/C Ratio} < 0.85 \implies \text{Bullish Accumulation 🟢}$
+     - $0.85 \le \text{P/C Ratio} \le 1.20 \implies \text{Neutral Accumulation 🟡}$
+     - $\text{P/C Ratio} > 1.20 \implies \text{Bearish Hedging 🔴}$
+
+2. **Dark Pool Volume Accumulation Ratio**:
+   - **Data Source**: Alpaca Trade Stream & Yahoo Finance 10-Day Volume Tape.
+   - **Volume Expansion Factor**: $V_{\text{ratio}} = \frac{V_{\text{latest}}}{V_{10\text{d avg}}}$
+   - **Institutional Accumulation Formula**:
+     $$\text{DarkPool}_{\%} = \min\left(78.5\%, \max\left(45.0\%, 50.0\% + (V_{\text{ratio}} - 1.0) \times 15.0\right)\right)$$
+
+3. **De-grossing Liquidity Pressure**:
+   - **Data Source**: Extended-hours volume velocity & intraday volatility bounds.
+   - **Derivation Logic**:
+     - $V_{\text{ratio}} > 1.8 \implies \mathbf{\text{Elevated (High Institutional Volume)}}$
+     - $0.6 \le V_{\text{ratio}} \le 1.8 \implies \mathbf{\text{Low (Stable Demand)}}$
+     - $V_{\text{ratio}} < 0.6 \implies \mathbf{\text{Very Low (Thin Liquidity)}}$
+
+---
+
+### 8.3 Cross-Project Rate Limit Elimination Standard (`@GammaGexTrading`)
+
+> **RATE LIMIT ELIMINATION DIRECTIVE FOR `@GammaGexTrading`**:
+> To prevent HTTP 429 rate limiting from Yahoo Finance and Alpaca, `@GammaGexTrading` MUST NOT initiate independent external API requests for stock prices, extended-hours quotes, or options chains.
+> Instead, `@GammaGexTrading` MUST read from the local SQLite WAL shared database (`backend/institutional_pms.db`) or query `GET /api/v1/market-hub/gex/{ticker}`.
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        SHARED LOCAL MARKET DATA HUB ARCHITECTURE                       │
+│                         (5-Second SQLite WAL Cache Persistence)                         │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+                                            │
+                  ┌─────────────────────────┴─────────────────────────┐
+                  ▼                                                   ▼
+       ┌──────────────────────┐                            ┌──────────────────────┐
+       │   yfinance 1m SIP    │                            │  Alpaca Snapshots    │
+       │   Prepost Stream     │                            │     Trade Stream     │
+       └──────────────────────┘                            └──────────────────────┘
+                  │                                                   │
+                  └─────────────────────────┬─────────────────────────┘
+                                            │
+                                            ▼
+                       ┌──────────────────────────────────────────┐
+                       │ sqlite3 WAL DB: shared_market_quotes     │
+                       │ (Zero Lock Contention / Rate-Limit Free) │
+                       └──────────────────────────────────────────┘
+                                            │
+             ┌──────────────────────────────┴──────────────────────────────┐
+             ▼                                                             ▼
+  ┌──────────────────────┐                                      ┌──────────────────────┐
+  │  @InstitutionalPMS   │                                      │   @GammaGexTrading   │
+  │   Portfolio System   │                                      │    GEX Option Engine │
+  └──────────────────────┘                                      └──────────────────────┘
+```
+
+1. **Shared Database Cache Path**: `c:\Users\jfan\Documents\institutional-pms\backend\institutional_pms.db`.
+2. **Zero Lock Contention**: SQLite WAL mode enables unlimited parallel read transactions across sub-agents and sub-projects.
+3. **5-Second TTL Guarantee**: Ensures `@GammaGexTrading` receives instant, rate-limit-free updates for Put Wall, Call Wall, GEX Flip Level (Zero Gamma), and Center of Gravity.
+
 
 
