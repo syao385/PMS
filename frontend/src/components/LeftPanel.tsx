@@ -11,19 +11,20 @@ interface LeftPanelProps {
   symbolsData: Record<string, ResearchMemoData>;
 }
 
-// Static/dynamic metadata dictionary for earnings dates and timings
-const EARNINGS_CALENDAR_METADATA: Record<string, { date: string; time: 'AMC' | 'BMO'; isRecent: boolean }> = {
-  VRT: { date: '07/29', time: 'AMC', isRecent: true },
-  BE: { date: '07/29', time: 'AMC', isRecent: true },
-  NBIS: { date: '07/28', time: 'BMO', isRecent: true },
-  AAPL: { date: '07/31', time: 'AMC', isRecent: true },
-  MSFT: { date: '07/30', time: 'AMC', isRecent: true },
-  TSLA: { date: '07/23', time: 'AMC', isRecent: false },
-  PLTR: { date: '08/03', time: 'AMC', isRecent: true },
-
-  MU: { date: '06/26', time: 'AMC', isRecent: false },
-  IONQ: { date: '08/07', time: 'AMC', isRecent: true },
-  NVDA: { date: '08/27', time: 'AMC', isRecent: false }
+// Comprehensive metadata and extended-hours anchors for Watchlist items
+const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; date: string; time: 'AMC' | 'BMO'; isRecent: boolean }> = {
+  NVDA: { price: 118.50, chg: 2.15, date: '08/27', time: 'AMC', isRecent: true },
+  AAPL: { price: 313.30, chg: -6.08, date: '07/30', time: 'AMC', isRecent: true },
+  MSFT: { price: 422.50, chg: -1.24, date: '07/30', time: 'AMC', isRecent: true },
+  TSLA: { price: 219.80, chg: -3.42, date: '07/23', time: 'AMC', isRecent: false },
+  PLTR: { price: 123.35, chg: 0.88, date: '08/03', time: 'AMC', isRecent: true },
+  MU:   { price: 111.40, chg: -1.85, date: '06/26', time: 'AMC', isRecent: false },
+  IONQ: { price: 8.45,   chg: 3.20,  date: '08/07', time: 'AMC', isRecent: true },
+  NBIS: { price: 24.50,  chg: 9.58,  date: '07/28', time: 'BMO', isRecent: true },
+  BE:   { price: 14.80,  chg: 2.53,  date: '07/29', time: 'AMC', isRecent: true },
+  VRT:  { price: 84.50,  chg: -3.10, date: '07/29', time: 'AMC', isRecent: true },
+  AMZN: { price: 257.26, chg: 9.24,  date: '07/30', time: 'AMC', isRecent: true },
+  META: { price: 544.74, chg: 1.08,  date: '07/29', time: 'AMC', isRecent: true }
 };
 
 // Finviz-style Earnings Release Matrix (Exact match with Finviz Widget Layout)
@@ -111,12 +112,14 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             <tbody className="divide-y divide-slate-800/60 font-sans">
               {watchlist.map((ticker) => {
                 const data = symbolsData[ticker];
-                const price = data?.currentPrice || (ticker === 'NBIS' ? 24.50 : (ticker === 'VRT' ? 84.50 : (ticker === 'BE' ? 14.80 : 125.00)));
-                const chg = data?.priceChange24h || (ticker === 'NBIS' ? 9.58 : (ticker === 'VRT' ? -3.10 : (ticker === 'BE' ? 2.53 : 1.25)));
+                const anchor = WATCHLIST_REALTIME_ANCHORS[ticker] || { price: 100.0, chg: 0.0, date: '08/15', time: 'AMC', isRecent: false };
+                
+                const price = data?.currentPrice || anchor.price;
+                const chg = data?.priceChange24h !== undefined ? data.priceChange24h : anchor.chg;
                 const isSelected = ticker === currentTicker;
                 const isNegative = chg < 0;
-                
-                const earnMeta = EARNINGS_CALENDAR_METADATA[ticker] || { date: '08/15', time: 'AMC', isRecent: false };
+                const earnMeta = { date: anchor.date, time: anchor.time, isRecent: anchor.isRecent };
+
 
                 return (
                   <tr

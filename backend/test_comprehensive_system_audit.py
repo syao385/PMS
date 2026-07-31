@@ -12,8 +12,12 @@ class TestComprehensiveSystemAudit(unittest.TestCase):
         details = fetch_latest_earnings_details("AMZN", "2026Q2")
         self.assertEqual(details["revenue_reported_m"], 60800.0, "AMZN revenue reported must equal $60.80B per Moomoo")
         self.assertEqual(details["revenue_surprise_pct"], 0.85, "AMZN revenue surprise % must equal +0.85% per Moomoo")
+        self.assertEqual(details["net_income_reported_m"], 15840.0, "AMZN net income reported must equal $15.84B per Moomoo")
+        self.assertEqual(details["net_income_consensus_m"], 18780.0, "AMZN net income consensus must equal $18.78B per Moomoo")
+        self.assertEqual(details["net_income_surprise_pct"], -15.65, "AMZN net income surprise % must equal -15.65% per Moomoo")
         self.assertEqual(details["eps_reported"], 1.26, "AMZN reported EPS must equal $1.26")
         self.assertEqual(details["eps_surprise_pct"], 6.38, "AMZN EPS surprise % must equal +6.38% per Moomoo")
+
 
 
     def test_pltr_moomoo_live_price_and_historical_q1(self):
