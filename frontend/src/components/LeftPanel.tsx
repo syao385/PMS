@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import type { ResearchMemoData } from '../types';
 import { Plus, Trash2, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 
-
-
 interface LeftPanelProps {
   watchlist: string[];
   currentTicker: string;
@@ -27,18 +25,20 @@ const EARNINGS_CALENDAR_METADATA: Record<string, { date: string; time: 'AMC' | '
   NVDA: { date: '08/27', time: 'AMC', isRecent: false }
 };
 
-// Finviz-style Market-Wide Weekly Earnings Calendar (Includes ALL major tickers releasing this week)
-const MARKET_WIDE_EARNINGS_CALENDAR = [
-  { ticker: 'NBIS', company: 'Nebius Group N.V.', mcap: '$5.2B', date: '07/28', timing: 'BMO', epsEst: '-$0.18', revEst: '$132.5M', status: 'Released (Beat & Raise 🟢)' },
-  { ticker: 'VRT', company: 'Vertiv Holdings Co', mcap: '$31.8B', date: '07/29', timing: 'AMC', epsEst: '$0.87', revEst: '$2.18B', status: 'Released (Rev Miss 🔴)' },
-  { ticker: 'BE', company: 'Bloom Energy Corp', mcap: '$3.4B', date: '07/29', timing: 'AMC', epsEst: '$1.45', revEst: '$297.5M', status: 'Released (Beat & Raise 🟢)' },
-  { ticker: 'MSFT', company: 'Microsoft Corp', mcap: '$3.1T', date: '07/30', timing: 'AMC', epsEst: '$3.10', revEst: '$64.8B', status: 'Today (AMC)' },
-  { ticker: 'AAPL', company: 'Apple Inc', mcap: '$3.4T', date: '07/31', timing: 'AMC', epsEst: '$1.35', revEst: '$84.2B', status: 'Tomorrow (AMC)' },
-  { ticker: 'AMZN', company: 'Amazon.com Inc', mcap: '$1.9T', date: '08/01', timing: 'AMC', epsEst: '$1.02', revEst: '$148.5B', status: 'Upcoming' },
-  { ticker: 'AMD', company: 'Advanced Micro Devices', mcap: '$235B', date: '08/04', timing: 'AMC', epsEst: '$0.68', revEst: '$5.7B', status: 'Upcoming' },
-  { ticker: 'PLTR', company: 'Palantir Technologies', mcap: '$62B', date: '08/05', timing: 'AMC', epsEst: '$0.08', revEst: '$652M', status: 'Upcoming' },
-  { ticker: 'IONQ', company: 'IonQ Inc', mcap: '$1.8B', date: '08/07', timing: 'AMC', epsEst: '-$0.22', revEst: '$8.5M', status: 'Upcoming' },
-  { ticker: 'NVDA', company: 'NVIDIA Corporation', mcap: '$3.0T', date: '08/27', timing: 'AMC', epsEst: '$0.64', revEst: '$28.5B', status: 'Upcoming' }
+// Finviz-style Earnings Release Matrix (Exact match with Finviz Widget Layout)
+interface FinvizCalendarRow {
+  dateSession: string; // e.g. "Jul 29/a", "Jul 30/b", "Jul 30/a"
+  tickers: string[];
+}
+
+const FINVIZ_EARNINGS_MATRIX: FinvizCalendarRow[] = [
+  { dateSession: 'Jul 29/a', tickers: ['MSFT', 'META', 'LRCX', 'ARM', 'QCOM', 'SBUX', 'VRT', 'BE'] },
+  { dateSession: 'Jul 30/b', tickers: ['MA', 'SHEL', 'BBVA', 'BUD', 'NBIS', 'BMY', 'MO', 'SO'] },
+  { dateSession: 'Jul 30/a', tickers: ['AAPL', 'AMZN', 'SYK', 'SONY', 'MFG', 'AJG', 'MPWR', 'VALE'] },
+  { dateSession: 'Jul 31', tickers: ['XOM', 'ABBV', 'CVX', 'LIN', 'ETN', 'ENB', 'CL', 'IMO'] },
+  { dateSession: 'Aug 03', tickers: ['PLTR', 'VRTX', 'MAR', 'WMB', 'FANG', 'OKE', 'TKO', 'ON'] },
+  { dateSession: 'Aug 04', tickers: ['AMD', 'CAT', 'HSBC', 'MRK', 'ANET', 'AMGN', 'TM', 'MU'] },
+  { dateSession: 'Aug 05', tickers: ['LLY', 'SNDK', 'WDC', 'NVO', 'DIS', 'SHOP', 'UBER', 'APP'] }
 ];
 
 export const LeftPanel: React.FC<LeftPanelProps> = ({
@@ -59,7 +59,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
     }
   };
 
-  const handleCalendarRowClick = (symbol: string) => {
+  const handleCalendarTickerClick = (symbol: string) => {
     if (!watchlist.includes(symbol)) {
       onAddSymbol(symbol);
     }
@@ -70,7 +70,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
     <div className="space-y-4 flex flex-col h-full min-w-0 font-sans">
       
       {/* 1. PORTFOLIO WATCHLIST CARD (Scrollable Table with 4 Columns) */}
-      <div className="glass-card p-4 space-y-3 flex flex-col max-h-[460px] border border-slate-800 rounded-2xl bg-[#0f1420]">
+      <div className="glass-card p-4 space-y-3 flex flex-col max-h-[380px] border border-slate-800 rounded-2xl bg-[#0f1420]">
         <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
           <span className="font-bold text-xs text-slate-100 uppercase tracking-wider font-mono flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -181,70 +181,69 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
         </div>
       </div>
 
-      {/* 2. FINVIZ-STYLE MARKET-WIDE EARNINGS CALENDAR THIS WEEK CARD */}
-      <div className="glass-card p-4 space-y-3 flex-1 border border-slate-800 rounded-2xl bg-[#0f1420] flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-          <span className="font-bold text-xs text-slate-100 uppercase tracking-wider font-mono flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-indigo-400" />
-            MARKET EARNINGS CALENDAR THIS WEEK (Finviz Feed)
+      {/* 2. FINVIZ EARNINGS RELEASE CALENDAR WIDGET (Exact Finviz UI Replica) */}
+      <div className="glass-card p-4 space-y-3 flex-1 border border-slate-800 rounded-2xl bg-[#0d121d] flex flex-col overflow-hidden font-mono">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span className="font-bold text-xs text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-blue-400" />
+            FINVIZ EARNINGS RELEASE CALENDAR
           </span>
-          <span className="text-[10px] text-indigo-300 font-mono">Click Row to Load Report</span>
+          <span className="text-[10px] text-blue-400 font-bold">Top 8 / Date</span>
         </div>
 
+        {/* Finviz Table Container */}
         <div className="overflow-y-auto flex-1 pr-1 scrollbar-thin scrollbar-thumb-slate-700">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[#141a28] text-slate-400 border-b border-slate-800 text-[10px] font-mono uppercase sticky top-0">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-[#151c2d] text-blue-300 border-b border-slate-800 text-[11px] font-bold">
               <tr>
-                <th className="p-2">Symbol</th>
-                <th className="p-2">Market Cap</th>
-                <th className="p-2 text-center">Date</th>
-                <th className="p-2 text-right">EPS / Rev Est</th>
+                <th className="p-2 w-20 border-r border-slate-800">Date</th>
+                <th className="p-2">Earnings Release (Top Tickers by Market Cap)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-sans">
-              {MARKET_WIDE_EARNINGS_CALENDAR.map((item) => {
-                const isSelected = item.ticker === currentTicker;
+            <tbody className="divide-y divide-slate-800/80">
+              {FINVIZ_EARNINGS_MATRIX.map((row, rIdx) => (
+                <tr key={rIdx} className="hover:bg-[#151c2d]/60 transition-colors">
+                  {/* Date Column (e.g. Jul 29/a, Jul 30/b) */}
+                  <td className="p-2 font-bold text-blue-300 border-r border-slate-800 text-[11px] align-middle whitespace-nowrap bg-[#111724]">
+                    {row.dateSession}
+                  </td>
 
-                return (
-                  <tr
-                    key={item.ticker}
-                    onClick={() => handleCalendarRowClick(item.ticker)}
-                    className={`cursor-pointer transition-all ${
-                      isSelected
-                        ? 'bg-indigo-600/20 font-bold border-l-2 border-l-indigo-500 text-white'
-                        : 'text-slate-300 hover:bg-slate-800/40 hover:text-white'
-                    }`}
-                  >
-                    <td className="p-2 font-mono font-bold text-slate-100">
-                      <div className="flex items-center gap-1">
-                        <span className="text-indigo-400 font-bold">${item.ticker}</span>
-                        <span className="text-[10px] text-slate-500 truncate max-w-[90px]">({item.company})</span>
-                      </div>
-                    </td>
-                    <td className="p-2 font-mono text-[10px] text-slate-400">
-                      {item.mcap}
-                    </td>
-                    <td className="p-2 text-center font-mono text-[11px]">
-                      <span className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
-                        {item.date} {item.timing}
-                      </span>
-                    </td>
-                    <td className="p-2 text-right font-mono text-[10px]">
-                      <span className={`px-2 py-0.5 rounded-full font-semibold ${
-                        item.status.includes('Beat')
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          : (item.status.includes('Miss')
-                            ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                            : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30')
-                      }`}>
-                        {item.epsEst} | {item.revEst}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+                  {/* Tickers Grid (8 Pill Buttons per Row) */}
+                  <td className="p-2">
+                    <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+                      {row.tickers.map((sym) => {
+                        const isCurrent = sym === currentTicker;
+                        const isInWatchlist = watchlist.includes(sym);
+
+                        return (
+                          <button
+                            key={sym}
+                            onClick={() => handleCalendarTickerClick(sym)}
+                            className={`px-2 py-1 rounded text-[11px] font-bold transition-all text-center truncate ${
+                              isCurrent
+                                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40 ring-1 ring-blue-400 font-extrabold'
+                                : (isInWatchlist
+                                  ? 'bg-indigo-900/60 hover:bg-indigo-600 text-indigo-200 border border-indigo-500/40'
+                                  : 'bg-[#182032] hover:bg-blue-600/80 text-blue-200 hover:text-white border border-slate-800')
+                            }`}
+                            title={`Click to analyze ${sym} earnings report`}
+                          >
+                            {sym}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Footer Legend */}
+        <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+          <span>/b = Before Market Open</span>
+          <span>/a = After Market Close</span>
         </div>
       </div>
 
