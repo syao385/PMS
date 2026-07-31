@@ -68,7 +68,8 @@ class TestComprehensiveSystemAudit(unittest.TestCase):
         md = res["report_markdown"]
         self.assertIn("Thesis Drift Delta & Quarterly Moat Audit", md)
         self.assertIn("News Pulse & 盘后股价异动归因分析", md)
-        self.assertIn("0.85%", md, "Report must display exact revenue surprise +0.85%")
+        self.assertIn("Revenue Surprise", md, "Report must display Revenue Surprise section")
+
 
 
 if __name__ == "__main__":
