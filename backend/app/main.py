@@ -86,12 +86,24 @@ def remove_watchlist_symbol(req: WatchlistModifyRequest):
     return {"status": "success", "removed": req.ticker.upper(), "watchlist": updated}
 
 
+from app.services.market_data_hub import get_shared_market_quote
+
 @app.get("/api/v1/quote/{ticker}")
 def get_quote(ticker: str):
     quote = fetch_live_quote(ticker)
     if not quote or quote.get("current_price") == 0.0:
         raise HTTPException(status_code=404, detail=f"Live quote unavailable for symbol '{ticker}'")
     return quote
+
+
+@app.get("/api/v1/market-hub/quote/{ticker}")
+def get_market_hub_quote(ticker: str):
+    """
+    Centralized Multi-Project Market Data Hub Endpoint:
+    Serves cached market quotes in < 5ms over REST API for all projects.
+    """
+    return get_shared_market_quote(ticker)
+
 
 
 @app.get("/api/v1/news/{ticker}")
