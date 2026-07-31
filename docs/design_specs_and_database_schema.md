@@ -128,3 +128,98 @@ CREATE TABLE IF NOT EXISTS watchlist (
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+---
+
+## 🚀 7. Centralized Multi-Project Market Data Hub Architecture (`market_data_hub.py`)
+
+### 7.1 Cross-Project Consolidation Blueprint
+
+To eliminate Yahoo Finance API rate limits (`HTTP 429 Too Many Requests`), market data access across **Institutional PMS**, **@GammaGexTrading**, **@MarketTerminal**, and **@QuantBackTestEngine** is routed through a single centralized service layer: `market_data_hub.py`.
+
+```text
+┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+                MULTI-PROJECT CENTRALIZED MARKET DATA HUB ARCHITECTURE                           
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
+    ┌────────────────┐  ┌────────────────────┐  ┌──────────────────┐  ┌─────────────────┐
+    │  PMS Frontend  │  │ QuantBackTestEngine │  │ GammaGexTrading  │  │ MarketTerminal  │
+    └───────┬────────┘  └─────────┬──────────┘  └────────┬─────────┘  └────────┬────────┘
+            │                     │                      │                     │
+            └─────────────────────┴──────────┬───────────┴─────────────────────┘
+                                             │
+                                             ▼
+                     ┌───────────────────────────────────────────────┐
+                     │ Shared Centralized Market Data Hub            │
+                     │ (market_data_hub.py Singleton Engine)         │
+                     └───────────────────────┬───────────────────────┘
+                                             │
+                                   (Check Local SQLite Cache)
+                                             │
+                       ┌─────────────────────┴─────────────────────┐
+                       │                                           │
+                       ▼                                           ▼
+         ┌──────────────────────────┐                ┌───────────────────────────┐
+         │ Cache Hit (< 30s TTL)    │                │ Cache Miss / Expired      │
+         │ Instant Return (< 5ms)   │                │ Single Batch Fetch        │
+         └──────────────────────────┘                └─────────────┬─────────────┘
+                                                                   │
+                                                                   ▼
+                                                     ┌───────────────────────────┐
+                                                     │ Provider Failover Queue:  │
+                                                     │ 1. yf.Tickers Batch (91%) │
+                                                     │ 2. Yahoo Chart Stream     │
+                                                     │ 3. Alpaca Market Stream   │
+                                                     │ 4. SEC EDGAR Core API     │
+                                                     └───────────────────────────┘
+```
+
+### 7.2 Multi-Tier Cache Time-To-Live (TTL) & Batch Request Rules
+
+| Cache Tier | Storage Table | TTL Threshold | Fetch Strategy | Purpose & Scope |
+|------------|---------------|---------------|----------------|-----------------|
+| **Live Market Quotes** | `shared_market_quotes` | **30 Seconds** | Single Batch Request (`yf.Tickers`) | Real-time & extended-hours post/pre market price streams |
+| **Earnings & Financials** | `shared_earnings_financials` | **24 Hours** | Lazy Bulk Ingest | Fundamental SEC 10-Q GAAP financial figures & surprises |
+| **News Stream Articles** | `shared_news_feeds` | **10 Minutes** | RSS Stream Batch | Clickable news headlines from Yahoo RSS & Google News |
+
+### 7.3 Database Schema Specifications (`shared_market_quotes`)
+
+```sql
+-- 1. Shared Centralized Live Market Quotes Table
+CREATE TABLE IF NOT EXISTS shared_market_quotes (
+    ticker TEXT PRIMARY KEY,
+    company_name TEXT,
+    sector TEXT,
+    trading_session TEXT,
+    current_price REAL NOT NULL,
+    previous_close REAL NOT NULL,
+    price_change_24h REAL NOT NULL,
+    day_high REAL,
+    day_low REAL,
+    volume INTEGER,
+    response_json TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Shared Centralized Earnings & Financials Table
+CREATE TABLE IF NOT EXISTS shared_earnings_financials (
+    ticker_quarter TEXT PRIMARY KEY,
+    ticker TEXT NOT NULL,
+    quarter TEXT NOT NULL,
+    revenue_reported_m REAL,
+    revenue_consensus_m REAL,
+    net_income_reported_m REAL,
+    net_income_consensus_m REAL,
+    eps_reported REAL,
+    eps_consensus REAL,
+    response_json TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Shared Centralized News Feeds Table
+CREATE TABLE IF NOT EXISTS shared_news_feeds (
+    ticker TEXT PRIMARY KEY,
+    news_json TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
