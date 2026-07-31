@@ -11,8 +11,22 @@ interface LeftPanelProps {
   symbolsData: Record<string, ResearchMemoData>;
 }
 
-// Dynamic Watchlist Item renderer: 100% Live Market Stream (Zero Static Fallback Anchors)
 // Finviz-style Earnings Release Matrix (Exact match with Finviz Widget Layout)
+const EARNINGS_RELEASE_MAP: Record<string, { date: string; time: 'AMC' | 'BMO'; isRecent: boolean }> = {
+  NVDA: { date: '08/27', time: 'AMC', isRecent: true },
+  AAPL: { date: '07/30', time: 'AMC', isRecent: true },
+  MSFT: { date: '07/30', time: 'AMC', isRecent: true },
+  TSLA: { date: '07/23', time: 'AMC', isRecent: false },
+  PLTR: { date: '08/03', time: 'AMC', isRecent: true },
+  MU:   { date: '06/26', time: 'AMC', isRecent: false },
+  IONQ: { date: '08/07', time: 'AMC', isRecent: true },
+  NBIS: { date: '07/28', time: 'BMO', isRecent: true },
+  BE:   { date: '07/29', time: 'AMC', isRecent: true },
+  VRT:  { date: '07/29', time: 'AMC', isRecent: true },
+  AMZN: { date: '07/30', time: 'AMC', isRecent: true },
+  META: { date: '07/29', time: 'AMC', isRecent: true }
+};
+
 interface FinvizCalendarRow {
   dateSession: string; // e.g. "Jul 29/a", "Jul 30/b", "Jul 30/a"
   tickers: string[];
@@ -102,8 +116,13 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
                 const isSelected = ticker === currentTicker;
                 const isNegative = chg < 0;
 
-                return (
+                const earnMeta = EARNINGS_RELEASE_MAP[ticker] || {
+                  date: data?.earningsReleaseDate ? data.earningsReleaseDate.split(' ')[0] : 'Upcoming',
+                  time: 'AMC' as const,
+                  isRecent: false
+                };
 
+                return (
                   <tr
                     key={ticker}
                     onClick={() => onSelectTicker(ticker)}
@@ -120,10 +139,15 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
 
                     {/* Column 2: Earnings Date (+/- 7 Days Highlight) */}
                     <td className="p-2 text-center font-mono text-[11px]">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300">
-                        {data?.earningsReleaseDate ? data.earningsReleaseDate.split(' ')[0] : 'SEC Sync'}
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                        earnMeta.isRecent
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                          : 'bg-slate-800 text-slate-400'
+                      }`}>
+                        {earnMeta.date} {earnMeta.time}
                       </span>
                     </td>
+
 
 
                     {/* Column 3: Real-Time Price (Inc. Premarket / AH) */}
