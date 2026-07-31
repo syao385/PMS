@@ -6,6 +6,7 @@ Backtests Post-Earnings Announcement Drift (PEAD), 3-Tier Tranche Scaling, and A
 import numpy as np
 import pandas as pd
 from typing import Dict, Any, List
+from app.services.market_data_hub import get_shared_market_quote
 
 class QuantBacktestEngine:
     def __init__(self, initial_capital: float = 1_000_000.0, transaction_cost_bps: float = 10.0):
@@ -15,7 +16,14 @@ class QuantBacktestEngine:
         self.positions = {}
         self.trade_log = []
 
+    def get_live_market_data(self, ticker: str) -> Dict[str, Any]:
+        """
+        Direct SQLite WAL Connection to Centralized Shared Market Data Hub (< 5ms latency).
+        """
+        return get_shared_market_quote(ticker)
+
     def evaluate_earnings_signal(self, rev_surprise: float, eps_surprise: float) -> str:
+
         """Categorizes earnings into 1 of 4 institutional scenarios."""
         if rev_surprise >= 0 and eps_surprise >= 0:
             return "SCENARIO_1_DOUBLE_BEAT"
