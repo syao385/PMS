@@ -31,5 +31,33 @@ institutional-pms/
 
 ---
 
+## 🚀 Cross-Project Market Data Integration Guide
+
+To prevent Yahoo Finance API rate limits (`HTTP 429 Too Many Requests`), all connected projects (**@QuantBackTestEngine**, **@GammaGexTrading**, **@MarketTerminal**) should route their market data queries through `market_data_hub.py`.
+
+### 1. Python Integration (Fastest — Direct SQLite WAL Import)
+
+Replace direct `import yfinance as yf` calls in your project with:
+
+```python
+from app.services.market_data_hub import get_shared_market_quote
+
+# Pull shared real-time quote (reads SQLite WAL cache in < 5ms)
+quote = get_shared_market_quote("AMZN")
+
+current_price = quote["current_price"]     # e.g. 235.50 / 257.26
+price_change_24h = quote["price_change_24h"] # e.g. +9.24%
+trading_session = quote["trading_session"]   # e.g. After-Hours Session (Post-Market)
+```
+
+### 2. REST API Integration (HTTP Requests)
+
+```http
+GET http://127.0.0.1:8090/api/v1/market-hub/quote/{SYMBOL}
+```
+
+---
+
 ## License
 Private Institutional Portfolio Management System.
+
