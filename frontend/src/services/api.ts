@@ -88,6 +88,19 @@ export async function fetchOrderFlowSentiment(ticker: string) {
   return null;
 }
 
+export async function fetchGammaGexAnalytics(ticker: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/market-hub/gex/${ticker}`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn(`Backend GEX analytics fetch failed for ${ticker}`, err);
+  }
+  return null;
+}
+
+
 
 
 export async function fetchLiveResearch(ticker: string) {

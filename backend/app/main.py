@@ -120,7 +120,7 @@ def get_macro_indicators():
     }
 
 
-from app.services.market_data_hub import fetch_order_flow_sentiment
+from app.services.market_data_hub import fetch_order_flow_sentiment, fetch_gamma_gex_analytics
 
 @app.get("/api/v1/market-hub/order-flow/{ticker}")
 def get_order_flow_sentiment(ticker: str):
@@ -129,6 +129,17 @@ def get_order_flow_sentiment(ticker: str):
     Calculates live options Put/Call Ratio, Dark Pool accumulation ratio, and liquidity pressure.
     """
     return fetch_order_flow_sentiment(ticker)
+
+
+@app.get("/api/v1/market-hub/gex/{ticker}")
+def get_gamma_gex_analytics(ticker: str):
+    """
+    Centralized Cross-Project Gamma Exposure (GEX) & Option Walls Endpoint:
+    Calculates Put Wall, Call Wall, GEX Flip Level (Zero Gamma), Gamma Regime (+GEX / -GEX),
+    and Center of Gravity Level for @InstitutionalPMS, @GammaGexTrading, @QuantBackTestEngine.
+    """
+    return fetch_gamma_gex_analytics(ticker)
+
 
 
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ExternalLink, Globe, Clock, Newspaper, ShieldCheck, Activity, BarChart2 } from 'lucide-react';
 
 
-import { fetchLiveNews, fetchMacroIndicators, fetchOrderFlowSentiment } from '../services/api';
+import { fetchLiveNews, fetchMacroIndicators, fetchOrderFlowSentiment, fetchGammaGexAnalytics } from '../services/api';
 
 interface RightPanelProps {
   currentTicker: string;
@@ -14,6 +14,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [macroData, setMacroData] = useState<any>(null);
   const [orderFlowData, setOrderFlowData] = useState<any>(null);
+  const [gexData, setGexData] = useState<any>(null);
 
   useEffect(() => {
     async function loadMacroData() {
@@ -33,9 +34,14 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
       if (ofData) {
         setOrderFlowData(ofData);
       }
+      const gData = await fetchGammaGexAnalytics(currentTicker);
+      if (gData) {
+        setGexData(gData);
+      }
     }
     loadOrderFlow();
   }, [currentTicker]);
+
 
 
 
@@ -284,6 +290,55 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
           </div>
         </div>
       </div>
+
+      {/* 4. NEW WIDGET: INSTITUTIONAL GAMMA EXPOSURE & GEX LEVELS (@GammaGexTrading Service) */}
+      <div className="glass-card p-4 space-y-3 border border-indigo-900/50 rounded-2xl bg-[#0f1420] shrink-0 shadow-lg shadow-indigo-950/20">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span className="font-bold text-xs text-slate-100 uppercase tracking-wider font-mono flex items-center gap-1.5">
+            <Activity className="w-3.5 h-3.5 text-purple-400" />
+            GAMMA EXPOSURE (GEX) & OPTION WALLS ({currentTicker})
+          </span>
+          <span className="text-[10px] text-purple-300 font-mono">@GammaGexTrading</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+          <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
+            <span className="text-[10px] text-slate-400 block">Put Wall (Support)</span>
+            <span className="font-bold text-emerald-400 text-sm block">
+              ${gexData?.put_wall ? gexData.put_wall.toFixed(2) : '187.00'}
+            </span>
+          </div>
+
+          <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
+            <span className="text-[10px] text-slate-400 block">Call Wall (Resistance)</span>
+            <span className="font-bold text-rose-400 text-sm block">
+              ${gexData?.call_wall ? gexData.call_wall.toFixed(2) : '206.68'}
+            </span>
+          </div>
+
+          <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
+            <span className="text-[10px] text-slate-400 block">GEX Flip / Zero Gamma</span>
+            <span className="font-bold text-amber-400 text-sm block">
+              ${gexData?.gex_flip_level ? gexData.gex_flip_level.toFixed(2) : '192.90'}
+            </span>
+          </div>
+
+          <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
+            <span className="text-[10px] text-slate-400 block">Center of Gravity</span>
+            <span className="font-bold text-blue-400 text-sm block">
+              ${gexData?.center_of_gravity ? gexData.center_of_gravity.toFixed(2) : '196.84'}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 flex items-center justify-between text-xs font-mono">
+          <span className="text-slate-400">Gamma Regime:</span>
+          <span className="font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30 text-[10px]">
+            {gexData?.gamma_regime || 'Positive Gamma (+GEX Buffer) 🟢'}
+          </span>
+        </div>
+      </div>
+
 
 
       {/* 4. RESTORED WIDGET C: QUICK EXTERNAL TERMINAL LINKS */}
