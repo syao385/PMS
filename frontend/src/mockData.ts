@@ -6,8 +6,9 @@ export const mockTickerData: Record<string, ResearchMemoData> = {
     companyName: 'NVIDIA Corporation',
     sector: 'Technology',
     industryName: 'Semiconductors & AI Acceleration',
-    currentPrice: 196.00,
-    priceChange24h: 0.49,
+    currentPrice: 196.84,
+    priceChange24h: 0.92,
+
 
 
     masterScores: {
