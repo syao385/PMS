@@ -64,6 +64,19 @@ export async function fetchLiveQuote(ticker: string) {
   return null;
 }
 
+export async function fetchMacroIndicators() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/market-hub/macro-indicators`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn('Backend macro indicators fetch failed', err);
+  }
+  return null;
+}
+
+
 export async function fetchLiveResearch(ticker: string) {
   try {
     const res = await fetch(`${API_BASE_URL}/api/v1/research/analyze`, {

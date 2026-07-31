@@ -105,6 +105,22 @@ def get_market_hub_quote(ticker: str):
     return get_shared_market_quote(ticker)
 
 
+@app.get("/api/v1/market-hub/macro-indicators")
+def get_macro_indicators():
+    """
+    Real-Time Macro Indicators & Market Benchmarks Endpoint:
+    Fetches live real-time quotes for VIX, S&P 500, Nasdaq 100, 10-Yr Yield (^TNX), Crude Oil (CL=F).
+    """
+    return {
+        "vix": get_shared_market_quote("^VIX"),
+        "sp500": get_shared_market_quote("^GSPC"),
+        "nasdaq": get_shared_market_quote("^IXIC"),
+        "tnx": get_shared_market_quote("^TNX"),
+        "crude_oil": get_shared_market_quote("CL=F")
+    }
+
+
+
 
 @app.get("/api/v1/news/{ticker}")
 def get_news(ticker: str):

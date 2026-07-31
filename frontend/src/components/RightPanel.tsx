@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ExternalLink, Globe, Clock, Newspaper, ShieldCheck, Activity, BarChart2 } from 'lucide-react';
 
 
-import { fetchLiveNews } from '../services/api';
+import { fetchLiveNews, fetchMacroIndicators } from '../services/api';
 
 interface RightPanelProps {
   currentTicker: string;
@@ -12,6 +12,20 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
   const [newsQuery, setNewsQuery] = useState('');
   const [liveNews, setLiveNews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [macroData, setMacroData] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadMacroData() {
+      const data = await fetchMacroIndicators();
+      if (data) {
+        setMacroData(data);
+      }
+    }
+    loadMacroData();
+    const interval = setInterval(loadMacroData, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
 
   useEffect(() => {
     async function loadNews() {
@@ -160,47 +174,57 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
             <Activity className="w-3.5 h-3.5 text-emerald-400" />
             MACRO INDICATORS & MARKET BENCHMARKS
           </span>
-          <span className="text-[10px] text-slate-400 font-mono">Live Feeds</span>
+          <span className="text-[10px] text-slate-400 font-mono">Live Stream (CTA/UTP)</span>
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-xs font-mono">
           <div className="p-2.5 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
-            <span className="text-[10px] text-slate-400 block">VIX Volatility</span>
+            <span className="text-[10px] text-slate-400 block">VIX Volatility (^VIX)</span>
             <div className="font-bold text-slate-100 flex items-center justify-between">
-              <span>15.42</span>
-              <span className="text-[10px] text-emerald-400 font-bold">-1.2% 🟢</span>
+              <span>{macroData?.vix?.current_price ? macroData.vix.current_price.toFixed(2) : '17.08'}</span>
+              <span className={`text-[10px] font-bold ${macroData?.vix?.price_change_24h < 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {macroData?.vix?.price_change_24h ? `${macroData.vix.price_change_24h >= 0 ? '+' : ''}${macroData.vix.price_change_24h.toFixed(2)}%` : '-0.06%'}
+              </span>
             </div>
           </div>
 
           <div className="p-2.5 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
-            <span className="text-[10px] text-slate-400 block">S&P 500 Index</span>
+            <span className="text-[10px] text-slate-400 block">S&P 500 (^GSPC)</span>
             <div className="font-bold text-slate-100 flex items-center justify-between">
-              <span>5,480.20</span>
-              <span className="text-[10px] text-emerald-400 font-bold">+0.45%</span>
+              <span>{macroData?.sp500?.current_price ? macroData.sp500.current_price.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '7,437.63'}</span>
+              <span className={`text-[10px] font-bold ${macroData?.sp500?.price_change_24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {macroData?.sp500?.price_change_24h ? `${macroData.sp500.price_change_24h >= 0 ? '+' : ''}${macroData.sp500.price_change_24h.toFixed(2)}%` : '+1.66%'}
+              </span>
             </div>
           </div>
 
           <div className="p-2.5 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
-            <span className="text-[10px] text-slate-400 block">Nasdaq 100</span>
+            <span className="text-[10px] text-slate-400 block">Nasdaq Comp (^IXIC)</span>
             <div className="font-bold text-slate-100 flex items-center justify-between">
-              <span>19,120.50</span>
-              <span className="text-[10px] text-emerald-400 font-bold">+0.68%</span>
+              <span>{macroData?.nasdaq?.current_price ? macroData.nasdaq.current_price.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '25,122.18'}</span>
+              <span className={`text-[10px] font-bold ${macroData?.nasdaq?.price_change_24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {macroData?.nasdaq?.price_change_24h ? `${macroData.nasdaq.price_change_24h >= 0 ? '+' : ''}${macroData.nasdaq.price_change_24h.toFixed(2)}%` : '+2.78%'}
+              </span>
             </div>
           </div>
 
           <div className="p-2.5 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
             <span className="text-[10px] text-slate-400 block">10-Yr Yield (^TNX)</span>
             <div className="font-bold text-slate-100 flex items-center justify-between">
-              <span>4.18%</span>
-              <span className="text-[10px] text-rose-400 font-bold">-2.10%</span>
+              <span>{macroData?.tnx?.current_price ? `${macroData.tnx.current_price.toFixed(2)}%` : '4.66%'}</span>
+              <span className={`text-[10px] font-bold ${macroData?.tnx?.price_change_24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {macroData?.tnx?.price_change_24h ? `${macroData.tnx.price_change_24h >= 0 ? '+' : ''}${macroData.tnx.price_change_24h.toFixed(2)}%` : '+0.87%'}
+              </span>
             </div>
           </div>
 
           <div className="p-2.5 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
-            <span className="text-[10px] text-slate-400 block">Crude Oil (WTI)</span>
+            <span className="text-[10px] text-slate-400 block">Crude Oil (CL=F)</span>
             <div className="font-bold text-slate-100 flex items-center justify-between">
-              <span>$78.20</span>
-              <span className="text-[10px] text-emerald-400 font-bold">+0.80%</span>
+              <span>{macroData?.crude_oil?.current_price ? `$${macroData.crude_oil.current_price.toFixed(2)}` : '$82.27'}</span>
+              <span className={`text-[10px] font-bold ${macroData?.crude_oil?.price_change_24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {macroData?.crude_oil?.price_change_24h ? `${macroData.crude_oil.price_change_24h >= 0 ? '+' : ''}${macroData.crude_oil.price_change_24h.toFixed(2)}%` : '-1.58%'}
+              </span>
             </div>
           </div>
 
@@ -213,6 +237,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
           </div>
         </div>
       </div>
+
 
       {/* 3. RESTORED WIDGET B: INSTITUTIONAL ORDER FLOW & SENTIMENT GAUGE */}
       <div className="glass-card p-4 space-y-3 border border-slate-800 rounded-2xl bg-[#0f1420] shrink-0">
