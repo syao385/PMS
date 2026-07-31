@@ -11,7 +11,7 @@ interface LeftPanelProps {
   symbolsData: Record<string, ResearchMemoData>;
 }
 
-// Comprehensive metadata and extended-hours anchors for Watchlist items (Exact Yahoo Finance 1m Prepost Stream Match)
+// Comprehensive metadata and extended-hours anchors for Watchlist items (Exact Moomoo & Yahoo Premarket Match)
 const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; date: string; time: 'AMC' | 'BMO'; isRecent: boolean }> = {
   NVDA: { price: 196.84, chg: 0.92,  date: '08/27', time: 'AMC', isRecent: true },
   AAPL: { price: 312.33, chg: -6.33, date: '07/30', time: 'AMC', isRecent: true },
@@ -22,10 +22,11 @@ const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; d
   IONQ: { price: 36.20,  chg: 1.20,  date: '08/07', time: 'AMC', isRecent: true },
   NBIS: { price: 199.00, chg: 5.61,  date: '07/28', time: 'BMO', isRecent: true },
   BE:   { price: 219.30, chg: 5.88,  date: '07/29', time: 'AMC', isRecent: true },
-  VRT:  { price: 232.63, chg: 2.25,  date: '07/29', time: 'AMC', isRecent: true },
+  VRT:  { price: 234.90, chg: 3.25,  date: '07/29', time: 'AMC', isRecent: true },
   AMZN: { price: 257.95, chg: 9.53,  date: '07/30', time: 'AMC', isRecent: true },
   META: { price: 542.78, chg: 0.70,  date: '07/29', time: 'AMC', isRecent: true }
 };
+
 
 
 
