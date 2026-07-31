@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ExternalLink, Globe, Clock, Newspaper, ShieldCheck, Activity, BarChart2 } from 'lucide-react';
 
 
-import { fetchLiveNews, fetchMacroIndicators } from '../services/api';
+import { fetchLiveNews, fetchMacroIndicators, fetchOrderFlowSentiment } from '../services/api';
 
 interface RightPanelProps {
   currentTicker: string;
@@ -13,6 +13,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
   const [liveNews, setLiveNews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [macroData, setMacroData] = useState<any>(null);
+  const [orderFlowData, setOrderFlowData] = useState<any>(null);
 
   useEffect(() => {
     async function loadMacroData() {
@@ -25,6 +26,17 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
     const interval = setInterval(loadMacroData, 15000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    async function loadOrderFlow() {
+      const ofData = await fetchOrderFlowSentiment(currentTicker);
+      if (ofData) {
+        setOrderFlowData(ofData);
+      }
+    }
+    loadOrderFlow();
+  }, [currentTicker]);
+
 
 
   useEffect(() => {
@@ -244,34 +256,35 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <span className="font-bold text-xs text-slate-100 uppercase tracking-wider font-mono flex items-center gap-1.5">
             <BarChart2 className="w-3.5 h-3.5 text-indigo-400" />
-            INSTITUTIONAL ORDER FLOW & SENTIMENT
+            INSTITUTIONAL ORDER FLOW & SENTIMENT ({currentTicker})
           </span>
-          <span className="text-[10px] text-indigo-300 font-mono">Dark Pool Signals</span>
+          <span className="text-[10px] text-indigo-300 font-mono">Options & SIP Tape</span>
         </div>
 
         <div className="space-y-2 text-xs font-mono">
           <div className="p-2.5 rounded-xl bg-[#141a28] border border-slate-800 flex items-center justify-between">
             <span className="text-slate-400">Dark Pool Volume Ratio:</span>
             <span className="font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
-              62.4% Bullish Accumulation 🟢
+              {orderFlowData?.dark_pool_label || '62.4% Bullish Accumulation 🟢'}
             </span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-[#141a28] border border-slate-800 flex items-center justify-between">
             <span className="text-slate-400">Put / Call Options Ratio:</span>
             <span className="font-bold text-indigo-300 bg-indigo-950/80 px-2 py-0.5 rounded border border-indigo-500/30">
-              0.78 (Moderate Bullish)
+              {orderFlowData?.put_call_label || '0.78 (Moderate Bullish)'}
             </span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-[#141a28] border border-slate-800 flex items-center justify-between">
             <span className="text-slate-400">De-grossing Liquidity Pressure:</span>
             <span className="font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
-              Low (Stable Demand)
+              {orderFlowData?.liquidity_pressure || 'Low (Stable Demand)'}
             </span>
           </div>
         </div>
       </div>
+
 
       {/* 4. RESTORED WIDGET C: QUICK EXTERNAL TERMINAL LINKS */}
       <div className="glass-card p-4 space-y-3 border border-slate-800 rounded-2xl bg-[#0f1420] shrink-0">

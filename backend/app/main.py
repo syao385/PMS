@@ -120,6 +120,18 @@ def get_macro_indicators():
     }
 
 
+from app.services.market_data_hub import fetch_order_flow_sentiment
+
+@app.get("/api/v1/market-hub/order-flow/{ticker}")
+def get_order_flow_sentiment(ticker: str):
+    """
+    Real-Time Institutional Order Flow & Sentiment Gauge Endpoint:
+    Calculates live options Put/Call Ratio, Dark Pool accumulation ratio, and liquidity pressure.
+    """
+    return fetch_order_flow_sentiment(ticker)
+
+
+
 
 
 @app.get("/api/v1/news/{ticker}")

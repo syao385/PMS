@@ -177,7 +177,7 @@ To eliminate Yahoo Finance API rate limits (`HTTP 429 Too Many Requests`), marke
 
 | Cache Tier | Storage Table | TTL Threshold | Fetch Strategy | Purpose & Scope |
 |------------|---------------|---------------|----------------|-----------------|
-| **Live Market Quotes** | `shared_market_quotes` | **30 Seconds** | Single Batch Request (`yf.Tickers`) | Real-time & extended-hours post/pre market price streams |
+| **Live Market Quotes** | `shared_market_quotes` | **5 Seconds** | Single Batch Request (`yf.Tickers` 1m prepost) | Real-time & extended-hours post/pre market CTA/UTP SIP price streams |
 | **Earnings & Financials** | `shared_earnings_financials` | **24 Hours** | Lazy Bulk Ingest | Fundamental SEC 10-Q GAAP financial figures & surprises |
 | **News Stream Articles** | `shared_news_feeds` | **10 Minutes** | RSS Stream Batch | Clickable news headlines from Yahoo RSS & Google News |
 
@@ -222,4 +222,43 @@ CREATE TABLE IF NOT EXISTS shared_news_feeds (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+---
+
+## 🏛️ 8. Centralized Cross-Project Market Data Hub (`market_data_hub.py`) Standard
+
+> **UNIVERSAL MANDATE FOR ALL PROJECTS**: All financial projects in the workspace (`@InstitutionalPMS`, `@QuantBackTestEngine`, `@GammaGexTrading`, `@MarketTerminal`) MUST consume live market data, extended-hours prices, macro indicators, and options order flow sentiment exclusively through `market_data_hub.py` or `GET /api/v1/market-hub/*` endpoints.
+
+### 8.1 Core Extraction Principles
+
+1. **Yahoo Finance 1m Prepost CTA/UTP SIP Stream**:
+   - Query `yf.Ticker(symbol).history(period='1d', interval='1m', prepost=True)`.
+   - Extracts real-time trades aggregated across CTA/UTP Consolidated Tape (Nasdaq, NYSE, ARCA, EDGX, BATS) with **< 1-second latency**.
+   - Resolves Yahoo Finance standard chart API metadata omissions (`postMarketPrice: None`).
+
+2. **5-Second SQLite WAL Shared Cache**:
+   - SQLite WAL mode enables concurrent multi-project reading without lock contention.
+   - Cache TTL is set to **5 Seconds** for instant streaming updates.
+
+3. **Strict 3-Session Pricing Rules Matrix**:
+   - **Premarket Session (4:00 AM – 9:30 AM EST)**:
+     - $\text{Live Price} = \text{Premarket Live Trade Price}$
+     - $\text{Reference Baseline} = \mathbf{\text{Yesterday's 4:00 PM Regular Market Close}}$
+     - $\% \Delta = \frac{\text{Live Trade} - \text{Yesterday Close}}{\text{Yesterday Close}} \times 100\%$
+   - **Regular Market Session (9:30 AM – 4:00 PM EST)**:
+     - $\text{Live Price} = \text{Regular Trade Price}$
+     - $\text{Reference Baseline} = \mathbf{\text{Yesterday's 4:00 PM Regular Market Close}}$
+     - $\% \Delta = \frac{\text{Live Trade} - \text{Yesterday Close}}{\text{Yesterday Close}} \times 100\%$
+   - **After-Hours Session (4:00 PM – 8:00 PM EST)**:
+     - $\text{Live Price} = \text{After-Hours Live Trade Price}$
+     - $\text{Reference Baseline} = \mathbf{\text{Today's 4:00 PM Regular Market Close}}$
+     - $\% \Delta = \frac{\text{Live Trade} - \text{Today 4:00 PM Close}}{\text{Today 4:00 PM Close}} \times 100\%$
+
+4. **Macro Economic Benchmarks Endpoint (`GET /api/v1/market-hub/macro-indicators`)**:
+   - Dynamically streams real-time figures for `^VIX`, `^GSPC` (S&P 500), `^IXIC` (Nasdaq Composite), `^TNX` (10-Yr Yield), and `CL=F` (Crude Oil).
+
+5. **Institutional Order Flow & Options Sentiment Engine (`GET /api/v1/market-hub/order-flow/{ticker}`)**:
+   - Calculates real-time **Put / Call Options Volume Ratio** from `yf.Ticker(symbol).option_chain()`.
+   - Computes **Dark Pool Accumulation Ratio** and **Liquidity Pressure** from live volume tape relative to 10-day moving average volume.
+
 

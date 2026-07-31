@@ -76,6 +76,19 @@ export async function fetchMacroIndicators() {
   return null;
 }
 
+export async function fetchOrderFlowSentiment(ticker: string) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/market-hub/order-flow/${ticker}`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn(`Backend order flow fetch failed for ${ticker}`, err);
+  }
+  return null;
+}
+
+
 
 export async function fetchLiveResearch(ticker: string) {
   try {
