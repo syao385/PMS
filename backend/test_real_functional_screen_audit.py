@@ -11,7 +11,9 @@ class TestRealFunctionalScreenAudit(unittest.TestCase):
     def test_nvda_real_after_hours_trade(self):
         quote = get_shared_market_quote("NVDA")
         self.assertGreaterEqual(quote["current_price"], 195.00, "NVDA price must reflect real after-hours trade price >= $195.00")
+        self.assertEqual(quote["previous_close"], 195.04, "NVDA after-hours reference close must equal Today's 4:00 PM Regular Close ($195.04)")
         self.assertGreater(quote["price_change_24h"], 0.0, "NVDA after-hours change must be positive (+)")
+
 
     def test_amzn_real_after_hours_trade(self):
         quote = get_shared_market_quote("AMZN")

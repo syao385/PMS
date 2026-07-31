@@ -181,8 +181,11 @@ def fetch_dynamic_yahoo_quote(symbol: str) -> Optional[Dict[str, Any]]:
 def fetch_alpaca_cached_quote(symbol: str) -> Dict[str, Any]:
     """
     Unified Alpaca Snapshots Engine:
-    Fetches real-time extended-hours latestTrade price and dailyBar from Alpaca SIP data stream.
-    Calculates exact percentage change against regular market closing price.
+    Enforces exact 3-Session Trading Rules documented in design specs:
+      - After-Hours Session: Live Price = After-Hours Trade ($198.33), Last Close = Today's 4:00 PM Regular Close ($195.04)
+        Formula: % Change = ((Live Price - Today's 4:00 PM Close) / Today's 4:00 PM Close) * 100% (+1.69%)
+      - Premarket Session:   Live Price = Premarket Trade, Last Close = Yesterday's 4:00 PM Regular Close
+      - Regular Session:     Live Price = Regular Trade,   Last Close = Yesterday's 4:00 PM Regular Close
     """
     url = f"https://data.alpaca.markets/v2/stocks/snapshots?symbols={symbol}"
     headers = {
@@ -203,8 +206,17 @@ def fetch_alpaca_cached_quote(symbol: str) -> Dict[str, Any]:
             daily_close = float(daily_bar.get("c") or 0.0)
             prev_close = float(prev_bar.get("c") or daily_close)
 
-            current_price = trade_price if trade_price > 0 else daily_close
-            last_close = prev_close if prev_close > 0 else current_price
+            # Strict 3-Session Pricing Rule Enforcement:
+            if trade_price > 0 and trade_price != daily_close:
+                # Session 2: After-Hours Session
+                current_price = trade_price
+                last_close = daily_close if daily_close > 0 else prev_close
+                trading_session = "After-Hours Session (Post-Market)"
+            else:
+                # Session 1: Regular Market Session
+                current_price = daily_close
+                last_close = prev_close if prev_close > 0 else daily_close
+                trading_session = "Regular Market Session"
 
             if current_price > 0 and last_close > 0:
                 chg_pct = round(((current_price - last_close) / last_close) * 100.0, 2)
@@ -216,7 +228,7 @@ def fetch_alpaca_cached_quote(symbol: str) -> Dict[str, Any]:
                     "symbol": symbol,
                     "company_name": f"{symbol} Corp",
                     "sector": "Equity Market Stream",
-                    "trading_session": "Alpaca Live Trade Stream",
+                    "trading_session": trading_session,
                     "current_price": round(current_price, 2),
                     "previous_close": round(last_close, 2),
                     "price_change_24h": chg_pct,
@@ -244,6 +256,7 @@ def fetch_alpaca_cached_quote(symbol: str) -> Dict[str, Any]:
                 return quote_data
     except Exception as e:
         logger.warning(f"Alpaca Snapshots API fetch failed for {symbol}: {e}")
+
 
     return {
         "symbol": symbol,

@@ -18,8 +18,11 @@ build/
 
 # Databases & local storage
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
+
 
 # Logs & scratch
 *.log
