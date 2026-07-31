@@ -8,7 +8,8 @@ class TestDynamicQuestion4Matrix(unittest.TestCase):
         md = res["report_markdown"]
         
         self.assertIn("VRT", md, "VRT report must include VRT ticker")
-        self.assertIn("Question 4", md, "VRT report must answer Question 4 decision")
+        self.assertIn("三大时光轴", md, "VRT report must include 3-Horizon strategy matrix")
+
 
 
     def test_nbis_q4_strategy_matrix_beat_stance(self):
