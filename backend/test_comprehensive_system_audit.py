@@ -55,10 +55,11 @@ class TestComprehensiveSystemAudit(unittest.TestCase):
         details = fetch_latest_earnings_details("MU", "2026Q3")
         self.assertEqual(details["period_ending_date"], "2026-05-30", "MU period ending date must be 2026-05-30")
         self.assertEqual(details["earnings_release_date"], "2026-06-26 (After Market Close)", "MU release date must be 2026-06-26 AMC")
-        self.assertEqual(details["revenue_reported_m"], 6811.0, "MU revenue reported must be $6,811.0M")
-        self.assertEqual(details["revenue_surprise_pct"], 2.11, "MU revenue surprise must equal +2.11%")
-        self.assertEqual(details["eps_reported"], 0.62, "MU EPS reported must equal $0.62")
-        self.assertEqual(details["eps_surprise_pct"], 21.57, "MU EPS surprise must equal +21.57%")
+        self.assertEqual(details["revenue_reported_m"], 41460.0, "MU revenue reported must be $41,460.0M ($41.46B)")
+        self.assertEqual(details["revenue_surprise_pct"], 15.73, "MU revenue surprise must equal +15.73% per Moomoo")
+        self.assertEqual(details["net_income_reported_m"], 28243.0, "MU net income reported must be $28,243.0M ($28.24B)")
+        self.assertEqual(details["net_income_surprise_pct"], 17.19, "MU net income surprise must equal +17.19% per Moomoo")
+
 
 
 

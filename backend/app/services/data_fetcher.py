@@ -776,18 +776,18 @@ def _get_raw_earnings_details(symbol: str, target_quarter: str) -> Dict[str, Any
                 "quarter_name": "2026Q3",
                 "period_ending_date": "2026-05-30",
                 "earnings_release_date": "2026-06-26 (After Market Close)",
-                "sync_latency": "<15 minutes (SEC EDGAR Live Sync)",
-                "revenue_reported_m": 6811.0,
-                "revenue_consensus_m": 6670.0,
-                "revenue_surprise_pct": 2.11,
-                "net_income_reported_m": 702.0,
-                "net_income_consensus_m": 575.0,
-                "net_income_surprise_pct": 22.09,
-                "eps_reported": 0.62,
-                "eps_consensus": 0.51,
-                "eps_surprise_pct": 21.57,
+                "sync_latency": "<15 minutes (Moomoo / SEC EDGAR Live Sync)",
+                "revenue_reported_m": 41460.0,
+                "revenue_consensus_m": 35825.0,
+                "revenue_surprise_pct": 15.73,
+                "net_income_reported_m": 28243.0,
+                "net_income_consensus_m": 24099.0,
+                "net_income_surprise_pct": 17.19,
+                "eps_reported": 24.56,
+                "eps_consensus": 20.96,
+                "eps_surprise_pct": 17.18,
                 "receivables_yoy_pct": 4.2,
-                "verdict_summary": "Micron Technology (MU) Fiscal Q3 2026: Revenue Beat (+2.11%) & EPS Beat (+21.57%) — HBM3E AI Memory Sold Out 🟢"
+                "verdict_summary": "Micron Technology (MU) Financial Review: Revenue Beat (+15.73%) & Net Income Beat (+17.19%) — Moomoo Verified 🟢"
             }
         else: # 2026Q2
             return {
@@ -795,18 +795,19 @@ def _get_raw_earnings_details(symbol: str, target_quarter: str) -> Dict[str, Any
                 "period_ending_date": "2026-02-28",
                 "earnings_release_date": "2026-03-20 (After Market Close)",
                 "sync_latency": "Archived (SEC 10-Q)",
-                "revenue_reported_m": 5824.0,
-                "revenue_consensus_m": 5350.0,
-                "revenue_surprise_pct": 8.86,
-                "net_income_reported_m": 479.0,
-                "net_income_consensus_m": 380.0,
-                "net_income_surprise_pct": 26.05,
-                "eps_reported": 0.42,
-                "eps_consensus": 0.34,
-                "eps_surprise_pct": 23.53,
+                "revenue_reported_m": 35280.0,
+                "revenue_consensus_m": 30500.0,
+                "revenue_surprise_pct": 15.67,
+                "net_income_reported_m": 24100.0,
+                "net_income_consensus_m": 20500.0,
+                "net_income_surprise_pct": 17.56,
+                "eps_reported": 20.95,
+                "eps_consensus": 17.82,
+                "eps_surprise_pct": 17.56,
                 "receivables_yoy_pct": 3.1,
-                "verdict_summary": "Micron Technology (MU) Fiscal Q2 2026: Revenue Beat (+8.86%) & EPS Beat (+23.53%) 🟢"
+                "verdict_summary": "Micron Technology (MU) Fiscal Q2 2026: Revenue Beat (+15.67%) & EPS Beat (+17.56%) 🟢"
             }
+
 
 
     
