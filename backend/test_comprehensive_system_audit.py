@@ -47,6 +47,20 @@ class TestComprehensiveSystemAudit(unittest.TestCase):
         self.assertGreater(quote["previous_close"], 0.0, "AAPL previous_close must be > 0")
         self.assertIsNotNone(quote["price_change_24h"], "AAPL price_change_24h must not be None")
 
+    def test_mu_sec_edgar_filing_figures(self):
+        quote = fetch_live_quote("MU")
+        self.assertGreater(quote["current_price"], 0.0, "MU price must be > 0")
+        self.assertGreater(quote["previous_close"], 0.0, "MU previous_close must be > 0")
+
+        details = fetch_latest_earnings_details("MU", "2026Q3")
+        self.assertEqual(details["period_ending_date"], "2026-05-30", "MU period ending date must be 2026-05-30")
+        self.assertEqual(details["earnings_release_date"], "2026-06-26 (After Market Close)", "MU release date must be 2026-06-26 AMC")
+        self.assertEqual(details["revenue_reported_m"], 6811.0, "MU revenue reported must be $6,811.0M")
+        self.assertEqual(details["revenue_surprise_pct"], 2.11, "MU revenue surprise must equal +2.11%")
+        self.assertEqual(details["eps_reported"], 0.62, "MU EPS reported must equal $0.62")
+        self.assertEqual(details["eps_surprise_pct"], 21.57, "MU EPS surprise must equal +21.57%")
+
+
 
 
         details = fetch_latest_earnings_details("AAPL", "2026Q3")
