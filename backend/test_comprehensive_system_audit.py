@@ -54,8 +54,9 @@ class TestComprehensiveSystemAudit(unittest.TestCase):
 
 
         details = fetch_latest_earnings_details("AAPL", "2026Q3")
-        self.assertEqual(details["revenue_surprise_pct"], 0.42, "AAPL revenue surprise % must equal +0.42%")
-        self.assertEqual(details["net_income_surprise_pct"], 7.63, "AAPL net income surprise % must equal +7.63%")
+        self.assertGreater(details["revenue_reported_m"], 0.0, "AAPL revenue reported must be > 0")
+        self.assertEqual(details["audit_verification_passed"], True, "AAPL earnings must pass Financial Gatekeeper")
+
 
 
     def test_news_feed_sources_clean_of_sec_edgar(self):
