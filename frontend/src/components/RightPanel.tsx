@@ -26,10 +26,11 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
           setLiveNews([
             {
               id: 'n1',
-              title: `${currentTicker} (Q2 2026): Primary SEC EDGAR 10-Q Financial Audit & Executive MD&A Tone Signal`,
+              title: `${currentTicker} (Q2 2026): 10-Q Financial Press Release & Executive MD&A Tone Signal`,
               url: `https://finance.yahoo.com/quote/${currentTicker}/news`,
-              source: 'SEC EDGAR / Primary Intake',
+              source: 'Yahoo Finance / Google News',
               time: '2026-07-30 08:50 UTC',
+
               sentiment: 'positive'
             },
             {
