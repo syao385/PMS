@@ -6,8 +6,9 @@ export const mockTickerData: Record<string, ResearchMemoData> = {
     companyName: 'NVIDIA Corporation',
     sector: 'Technology',
     industryName: 'Semiconductors & AI Acceleration',
-    currentPrice: 198.33,
-    priceChange24h: 1.69,
+    currentPrice: 196.00,
+    priceChange24h: 0.49,
+
 
     masterScores: {
       duan: { name: 'Duan Yongping (段永平)', avatar: '⚡', philosophy: 'Business Essence & Simplicity', score: 4.7, keyQuote: 'NVIDIA sells the essential spades & shovels for AI computing.', pros: ['Monopolistic pricing power', 'CUDA ecosystem software moat'], cons: ['Customer concentration'] },

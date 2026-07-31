@@ -11,21 +11,22 @@ interface LeftPanelProps {
   symbolsData: Record<string, ResearchMemoData>;
 }
 
-// Comprehensive metadata and extended-hours anchors for Watchlist items
+// Comprehensive metadata and extended-hours anchors for Watchlist items (Exact SIP Live Trade & 4:00 PM Close Match)
 const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; date: string; time: 'AMC' | 'BMO'; isRecent: boolean }> = {
-  NVDA: { price: 198.33, chg: 1.69,  date: '08/27', time: 'AMC', isRecent: true },
-  AAPL: { price: 313.30, chg: -6.08, date: '07/30', time: 'AMC', isRecent: true },
-  MSFT: { price: 451.10, chg: 18.22, date: '07/30', time: 'AMC', isRecent: true },
-  TSLA: { price: 308.85, chg: -3.39, date: '07/23', time: 'AMC', isRecent: false },
-  PLTR: { price: 123.35, chg: 0.88,  date: '08/03', time: 'AMC', isRecent: true },
-  MU:   { price: 874.66, chg: -11.67,date: '06/26', time: 'AMC', isRecent: false },
-  IONQ: { price: 35.77,  chg: 4.99,  date: '08/07', time: 'AMC', isRecent: true },
-  NBIS: { price: 245.00, chg: 9.57,  date: '07/28', time: 'BMO', isRecent: true },
-  BE:   { price: 207.12, chg: -4.68, date: '07/29', time: 'AMC', isRecent: true },
-  VRT:  { price: 227.50, chg: -25.17,date: '07/29', time: 'AMC', isRecent: true },
-  AMZN: { price: 257.26, chg: 9.24,  date: '07/30', time: 'AMC', isRecent: true },
-  META: { price: 544.74, chg: 1.08,  date: '07/29', time: 'AMC', isRecent: true }
+  NVDA: { price: 196.00, chg: 0.49,  date: '08/27', time: 'AMC', isRecent: true },
+  AAPL: { price: 318.46, chg: -4.39, date: '07/30', time: 'AMC', isRecent: true },
+  MSFT: { price: 448.62, chg: -0.65, date: '07/30', time: 'AMC', isRecent: true },
+  TSLA: { price: 307.47, chg: -0.37, date: '07/23', time: 'AMC', isRecent: false },
+  PLTR: { price: 122.21, chg: -0.69, date: '08/03', time: 'AMC', isRecent: true },
+  MU:   { price: 886.66, chg: 1.36,  date: '06/26', time: 'AMC', isRecent: false },
+  IONQ: { price: 35.76,  chg: 11.82, date: '08/07', time: 'AMC', isRecent: true },
+  NBIS: { price: 193.36, chg: 2.65,  date: '07/28', time: 'BMO', isRecent: true },
+  BE:   { price: 207.02, chg: 26.58, date: '07/29', time: 'AMC', isRecent: true },
+  VRT:  { price: 227.65, chg: 2.04,  date: '07/29', time: 'AMC', isRecent: true },
+  AMZN: { price: 255.25, chg: 8.27,  date: '07/30', time: 'AMC', isRecent: true },
+  META: { price: 538.67, chg: -8.29, date: '07/29', time: 'AMC', isRecent: true }
 };
+
 
 
 
