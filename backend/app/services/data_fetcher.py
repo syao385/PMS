@@ -318,14 +318,65 @@ def fetch_market_weekly_earnings_calendar() -> List[Dict[str, Any]]:
     ]
 
 
-def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> Dict[str, Any]:
+def validate_earnings_financial_rigor(details: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Institutional Audit Verification Gatekeeper:
+    Enforces mathematical consistency across revenue, net income, and EPS surprise metrics.
+    If details fails formula cross-validation, raises ValueError to block database pollution!
+    """
+    if not details.get("is_released", True):
+        details["audit_verification_passed"] = True
+        return details
 
+    rev_rep = details.get("revenue_reported_m", 0.0)
+    rev_con = details.get("revenue_consensus_m", 0.0)
+    rev_surp = details.get("revenue_surprise_pct", 0.0)
+
+    ni_rep = details.get("net_income_reported_m", 0.0)
+    ni_con = details.get("net_income_consensus_m", 0.0)
+    ni_surp = details.get("net_income_surprise_pct", 0.0)
+
+    eps_rep = details.get("eps_reported", 0.0)
+    eps_con = details.get("eps_consensus", 0.0)
+    eps_surp = details.get("eps_surprise_pct", 0.0)
+
+    # 1. Revenue surprise mathematical cross-check
+    if rev_con > 0:
+        calc_rev_surp = round(((rev_rep - rev_con) / rev_con) * 100.0, 2)
+        if abs(calc_rev_surp - rev_surp) > 0.10:
+            raise ValueError(f"Financial Integrity Gatekeeper Failure: Revenue Surprise {rev_surp}% does not match calculated {calc_rev_surp}% ({rev_rep} vs {rev_con})")
+
+    # 2. Net Income surprise mathematical cross-check
+    if ni_con > 0 and ni_rep > 0:
+        calc_ni_surp = round(((ni_rep - ni_con) / ni_con) * 100.0, 2)
+        if abs(calc_ni_surp - ni_surp) > 0.10:
+            raise ValueError(f"Financial Integrity Gatekeeper Failure: Net Income Surprise {ni_surp}% does not match calculated {calc_ni_surp}% ({ni_rep} vs {ni_con})")
+
+    # 3. EPS surprise mathematical cross-check
+    if eps_con > 0 and eps_rep > 0:
+        calc_eps_surp = round(((eps_rep - eps_con) / eps_con) * 100.0, 2)
+        if abs(calc_eps_surp - eps_surp) > 0.10:
+            raise ValueError(f"Financial Integrity Gatekeeper Failure: EPS Surprise {eps_surp}% does not match calculated {calc_eps_surp}% ({eps_rep} vs {eps_con})")
+
+    details["audit_verification_passed"] = True
+    return details
+
+
+def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> Dict[str, Any]:
     """
     Fetches exact earnings period ending date, earnings release date/time, and revenue/EPS surprise metrics.
     Guarantees timely sync with <15 min latency from SEC EDGAR and market data feeds.
+    Passes result through validate_earnings_financial_rigor for gatekeeper verification.
     """
     symbol = ticker.upper().strip()
     target_quarter = (quarter_override or "2026Q2").replace(" (Latest)", "").strip()
+
+    raw_details = _get_raw_earnings_details(symbol, target_quarter)
+    return validate_earnings_financial_rigor(raw_details)
+
+
+def _get_raw_earnings_details(symbol: str, target_quarter: str) -> Dict[str, Any]:
+
 
     if symbol == "AMZN":
         return {
@@ -403,10 +454,11 @@ def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> 
                 "net_income_surprise_pct": 19.07,
                 "eps_reported": 0.08,
                 "eps_consensus": 0.067,
-                "eps_surprise_pct": 18.96,
+                "eps_surprise_pct": 19.40,
                 "receivables_yoy_pct": 3.1,
-                "verdict_summary": "Palantir Technologies (PLTR) Q1 2026: Revenue Beat (+5.85%) & EPS Beat (+18.96%) 🟢"
+                "verdict_summary": "Palantir Technologies (PLTR) Q1 2026: Revenue Beat (+5.85%) & EPS Beat (+19.40%) 🟢"
             }
+
 
 
     elif symbol == "AAPL":

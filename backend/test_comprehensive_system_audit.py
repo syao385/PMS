@@ -28,7 +28,8 @@ class TestComprehensiveSystemAudit(unittest.TestCase):
         # Test Q1 2026 Historical Back-Loading (May 4, 2026)
         q1_details = fetch_latest_earnings_details("PLTR", "2026Q1")
         self.assertEqual(q1_details["revenue_surprise_pct"], 5.85, "PLTR Q1 2026 revenue surprise must equal +5.85%")
-        self.assertEqual(q1_details["eps_surprise_pct"], 18.96, "PLTR Q1 2026 EPS surprise must equal +18.96%")
+        self.assertEqual(q1_details["eps_surprise_pct"], 19.40, "PLTR Q1 2026 EPS surprise must equal +19.40%")
+
 
         # Test Q2 2026 Upcoming Release Date (Aug 3, 2026 AMC)
         q2_details = fetch_latest_earnings_details("PLTR", "2026Q2")

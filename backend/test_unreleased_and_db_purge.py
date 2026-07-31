@@ -24,7 +24,8 @@ class TestUnreleasedQuarterAndDbPurge(unittest.TestCase):
         details = fetch_latest_earnings_details("PLTR", "2026Q1")
         self.assertTrue(details["is_released"], "PLTR 2026Q1 must be marked as is_released: True")
         self.assertEqual(details["revenue_surprise_pct"], 5.85, "PLTR Q1 revenue surprise must equal +5.85%")
-        self.assertEqual(details["eps_surprise_pct"], 18.96, "PLTR Q1 EPS surprise must equal +18.96%")
+        self.assertEqual(details["eps_surprise_pct"], 19.40, "PLTR Q1 EPS surprise must equal +19.40%")
+
 
     def test_amzn_exact_moomoo_report_generation(self):
         res = execute_skill_runner("earnings-review", "AMZN", params={"quarter": "2026Q2"}, force_refresh=True)
