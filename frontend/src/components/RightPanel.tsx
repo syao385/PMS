@@ -29,18 +29,22 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
   }, []);
 
   useEffect(() => {
+    setOrderFlowData(null);
+    setGexData(null);
+
     async function loadOrderFlow() {
       const ofData = await fetchOrderFlowSentiment(currentTicker);
-      if (ofData) {
+      if (ofData && ofData.symbol === currentTicker) {
         setOrderFlowData(ofData);
       }
       const gData = await fetchGammaGexAnalytics(currentTicker);
-      if (gData) {
+      if (gData && gData.symbol === currentTicker) {
         setGexData(gData);
       }
     }
     loadOrderFlow();
   }, [currentTicker]);
+
 
 
 
@@ -305,28 +309,28 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
           <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
             <span className="text-[10px] text-slate-400 block">Put Wall (Support)</span>
             <span className="font-bold text-emerald-400 text-sm block">
-              ${gexData?.put_wall ? gexData.put_wall.toFixed(2) : '187.00'}
+              {gexData?.put_wall ? `$${gexData.put_wall.toFixed(2)}` : 'Loading...'}
             </span>
           </div>
 
           <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
             <span className="text-[10px] text-slate-400 block">Call Wall (Resistance)</span>
             <span className="font-bold text-rose-400 text-sm block">
-              ${gexData?.call_wall ? gexData.call_wall.toFixed(2) : '206.68'}
+              {gexData?.call_wall ? `$${gexData.call_wall.toFixed(2)}` : 'Loading...'}
             </span>
           </div>
 
           <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
             <span className="text-[10px] text-slate-400 block">GEX Flip / Zero Gamma</span>
             <span className="font-bold text-amber-400 text-sm block">
-              ${gexData?.gex_flip_level ? gexData.gex_flip_level.toFixed(2) : '192.90'}
+              {gexData?.gex_flip_level ? `$${gexData.gex_flip_level.toFixed(2)}` : 'Loading...'}
             </span>
           </div>
 
           <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 space-y-1">
             <span className="text-[10px] text-slate-400 block">Center of Gravity</span>
             <span className="font-bold text-blue-400 text-sm block">
-              ${gexData?.center_of_gravity ? gexData.center_of_gravity.toFixed(2) : '196.84'}
+              {gexData?.center_of_gravity ? `$${gexData.center_of_gravity.toFixed(2)}` : 'Loading...'}
             </span>
           </div>
         </div>
@@ -334,10 +338,11 @@ export const RightPanel: React.FC<RightPanelProps> = ({ currentTicker }) => {
         <div className="p-2 rounded-xl bg-[#141a28] border border-slate-800 flex items-center justify-between text-xs font-mono">
           <span className="text-slate-400">Gamma Regime:</span>
           <span className="font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30 text-[10px]">
-            {gexData?.gamma_regime || 'Positive Gamma (+GEX Buffer) 🟢'}
+            {gexData?.gamma_regime || 'Calculating GEX Regime...'}
           </span>
         </div>
       </div>
+
 
 
 
