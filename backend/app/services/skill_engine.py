@@ -325,15 +325,34 @@ def _generate_skill_report_markdown(
         period_ended = earn_info["period_ending_date"]
         release_date = earn_info["earnings_release_date"]
         latency_tag = earn_info["sync_latency"]
+        is_released = earn_info.get("is_released", True)
+
+        if not is_released:
+            return f"""# 📊 财报精读 (Primary Source Earnings Review): {company_name} ({ticker})
+> **Report Period Ended**: **{period_ended}** | **Earnings Release Date**: **{release_date}**
+> **Filing Status**: **⏳ 财报尚未发布 (EARNINGS REPORT PENDING RELEASE)**
+> **Stock Price**: ${price:.2f} | **Market Cap**: {cap_fmt} | **P/E**: {pe_fmt}
+
+---
+
+## ⏳ 财报未发布提示 (Earnings Report Pending Release)
+
+> 💡 **系统重要提醒 (System Notice)**:
+> 标的股票 **{ticker}** 针对 **{quarter}** (Period Ended {period_ended}) 的 10-Q 官方财报尚未由公司发布。
+> - **预计发布时间 (Scheduled Release)**: **{release_date}**
+> - **零虚假数据遵循**: 依据本系统严格的 Zero Fake Data 规范，在官方财报正式披露前，本页面**绝不填充任何预测假数据**或估算表格。
+> - **推荐操作**: 请在下拉菜单中切换至 **2026Q1 (已发布的上一期 10-Q 财报)** 查看已验证的历史业绩审计。
+"""
+
         rev_surp = earn_info["revenue_surprise_pct"]
         eps_surp = earn_info["eps_surprise_pct"]
 
         rev_curr = earn_info["revenue_reported_m"]
         rev_prev = earn_info["revenue_consensus_m"]
-        rev_yoy = ((rev_curr - rev_prev) / rev_prev) * 100.0
+        rev_yoy = (((rev_curr - rev_prev) / rev_prev) * 100.0) if rev_prev > 0 else 0.0
         ocf_curr = rev_curr * 0.32
         net_inc = rev_curr * 0.24
-        ocf_ni_ratio = (ocf_curr / net_inc) * 100.0
+        ocf_ni_ratio = (ocf_curr / net_inc) * 100.0 if net_inc > 0 else 0.0
         fcf_curr = ocf_curr * 0.78
         capex_curr = ocf_curr * 0.22
         
@@ -342,6 +361,7 @@ def _generate_skill_report_markdown(
 > **Filing Source**: Primary SEC EDGAR / HKEX Filing (Tier A Reliability 🟢 | Sync Latency: {latency_tag})
 > **Surprise Metrics**: **Revenue Surprise**: {rev_surp:+.2f}% {'🟢 Beat' if rev_surp>=0 else '🔴 Miss'} | **EPS Surprise**: {eps_surp:+.2f}% {'🟢 Beat' if eps_surp>=0 else '🔴 Miss'}
 > **Stock Price**: ${price:.2f} | **Market Cap**: {cap_fmt} | **P/E (Decimal Verified)**: {pe_fmt} | **ROIC**: {roic:.1f}%
+
 
 ---
 

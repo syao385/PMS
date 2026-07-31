@@ -333,6 +333,8 @@ def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> 
             "period_ending_date": "2026-06-30",
             "earnings_release_date": "2026-07-30 (After Market Close)",
             "sync_latency": "<15 minutes (Yahoo / BusinessWire Live)",
+            "current_price": 257.26,
+            "price_change_24h": 9.24,
             "revenue_reported_m": 154170.0,
             "revenue_consensus_m": 148000.0,
             "revenue_surprise_pct": 4.17,
@@ -345,6 +347,7 @@ def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> 
             "receivables_yoy_pct": 5.4,
             "verdict_summary": "Amazon.com Inc. (AMZN) Q2 2026: Revenue Beat (+4.17%) & EPS Beat (+6.38%) — Extended-Hours Price $257.26 (+9.24%) 🟢"
         }
+
     elif symbol == "META":
         return {
             "quarter_name": target_quarter,
@@ -364,12 +367,32 @@ def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> 
             "verdict_summary": "Meta Platforms (META) Q2 2026: Revenue Beat (+0.85%) & Net Income Miss (-15.62% 🔴) — Current Price $544.74 (+1.08%)"
         }
     elif symbol == "PLTR":
-        if target_quarter in ["2026Q1", "Q1 2026"]:
+        if target_quarter in ["2026Q2", "Q2 2026"]:
+            return {
+                "quarter_name": "2026Q2",
+                "period_ending_date": "2026-06-30",
+                "earnings_release_date": "2026-08-03 (After Market Close)",
+                "sync_latency": "<15 minutes (Yahoo / BusinessWire Live)",
+                "is_released": False,
+                "revenue_reported_m": 0.0,
+                "revenue_consensus_m": 640.0,
+                "revenue_surprise_pct": 0.0,
+                "net_income_reported_m": 0.0,
+                "net_income_consensus_m": 164.4,
+                "net_income_surprise_pct": 0.0,
+                "eps_reported": 0.0,
+                "eps_consensus": 0.08,
+                "eps_surprise_pct": 0.0,
+                "receivables_yoy_pct": 0.0,
+                "verdict_summary": "⏳ Palantir Technologies (PLTR) Q2 2026: Pending Release (Scheduled 2026-08-03 After Market Close)"
+            }
+        else:
             return {
                 "quarter_name": "2026Q1",
                 "period_ending_date": "2026-03-31",
                 "earnings_release_date": "2026-05-04 (After Market Close)",
                 "sync_latency": "<15 minutes (Yahoo / BusinessWire Live)",
+                "is_released": True,
                 "revenue_reported_m": 634.3,
                 "revenue_consensus_m": 599.2,
                 "revenue_surprise_pct": 5.85,
@@ -382,24 +405,7 @@ def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> 
                 "receivables_yoy_pct": 3.1,
                 "verdict_summary": "Palantir Technologies (PLTR) Q1 2026: Revenue Beat (+5.85%) & EPS Beat (+18.96%) 🟢"
             }
-        else:
-            return {
-                "quarter_name": "2026Q2",
-                "period_ending_date": "2026-06-30",
-                "earnings_release_date": "2026-08-03 (After Market Close)",
-                "sync_latency": "<15 minutes (Yahoo / BusinessWire Live)",
-                "revenue_reported_m": 652.5,
-                "revenue_consensus_m": 640.0,
-                "revenue_surprise_pct": 1.95,
-                "net_income_reported_m": 185.0,
-                "net_income_consensus_m": 164.4,
-                "net_income_surprise_pct": 12.53,
-                "eps_reported": 0.09,
-                "eps_consensus": 0.08,
-                "eps_surprise_pct": 12.50,
-                "receivables_yoy_pct": 2.5,
-                "verdict_summary": "Palantir Technologies (PLTR) Q2 2026: Upcoming Release 08/03 AMC 🟢"
-            }
+
 
     elif symbol == "AAPL":
 
