@@ -20,14 +20,15 @@ class TestMarketDataHubCache(unittest.TestCase):
             self.assertGreater(q["previous_close"], 0.0, f"{ticker} previous_close must be > 0")
             self.assertIn("price_change_24h", q, f"{ticker} must contain price_change_24h")
 
-        # Verify key benchmark prices across extended-hours session
-        self.assertEqual(quotes["BE"]["current_price"], 207.12, "BE price must be 3-digit $207.12")
-        self.assertEqual(quotes["VRT"]["current_price"], 227.50, "VRT price must be 3-digit $227.50")
-        self.assertEqual(quotes["NBIS"]["current_price"], 245.00, "NBIS price must be $245.00")
-        self.assertEqual(quotes["AMZN"]["current_price"], 257.26, "AMZN after-hours price must be $257.26")
-        self.assertEqual(quotes["META"]["current_price"], 544.74, "META after-hours price must be $544.74")
-        self.assertEqual(quotes["AAPL"]["current_price"], 313.30, "AAPL after-hours price must be $313.30")
-        self.assertEqual(quotes["PLTR"]["current_price"], 123.35, "PLTR after-hours price must be $123.35")
+        # Verify dynamic live quote extraction across all watchlist symbols
+        self.assertGreater(quotes["BE"]["current_price"], 0.0, "BE current_price must be > 0")
+        self.assertGreater(quotes["VRT"]["current_price"], 0.0, "VRT current_price must be > 0")
+        self.assertGreater(quotes["NBIS"]["current_price"], 0.0, "NBIS current_price must be > 0")
+        self.assertGreater(quotes["AMZN"]["current_price"], 0.0, "AMZN current_price must be > 0")
+        self.assertGreater(quotes["META"]["current_price"], 0.0, "META current_price must be > 0")
+        self.assertGreater(quotes["AAPL"]["current_price"], 0.0, "AAPL current_price must be > 0")
+        self.assertGreater(quotes["PLTR"]["current_price"], 0.0, "PLTR current_price must be > 0")
+
 
 
     def test_cache_hit_speed(self):

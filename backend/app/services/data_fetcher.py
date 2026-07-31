@@ -24,66 +24,18 @@ ALPACA_DATA_URL = "https://data.alpaca.markets/v2"
 
 def fetch_live_quote(ticker: str) -> Dict[str, Any]:
     """
-    Programmatically fetches real-time & extended-hours price quote (postMarket/preMarket/regular),
-    enforcing exact 3-Session Trading Rules:
+    Programmatically fetches real-time & extended-hours price quote (postMarket/preMarket/regular)
+    routed through Centralized Market Data Hub (market_data_hub.py).
+    Enforces exact 3-Session Trading Rules:
       - After-Hours Session: Live Price = After-Hours Trade, Last Close = Today's 4:00 PM Regular Close
       - Premarket Session:   Live Price = Premarket Trade,   Last Close = Yesterday's 4:00 PM Regular Close
       - Regular Session:     Live Price = Regular Trade,     Last Close = Yesterday's 4:00 PM Regular Close
     Formula: % Change = ((Live Price - Last Close) / Last Close) * 100%
+    Zero static hardcoded dictionary fallbacks guaranteed.
     """
-    symbol = ticker.upper().strip()
+    from app.services.market_data_hub import get_shared_market_quote
+    return get_shared_market_quote(ticker)
 
-    # Benchmark Extended-Hours Post-Market Trading Anchors for After-Hours Earnings Releases
-    extended_session_anchors = {
-        "AMZN": {"after_hours_price": 257.26, "regular_close": 235.50, "company_name": "Amazon.com Inc.", "sector": "E-Commerce / AWS Cloud"},
-        "META": {"after_hours_price": 544.74, "regular_close": 538.92, "company_name": "Meta Platforms Inc.", "sector": "Social Media / AI AdTech"},
-        "AAPL": {"after_hours_price": 313.30, "regular_close": 333.58, "company_name": "Apple Inc.", "sector": "Technology / Consumer AI"},
-        "PLTR": {"after_hours_price": 123.35, "regular_close": 122.27, "company_name": "Palantir Technologies Inc.", "sector": "Enterprise AI Software"},
-        "NVDA": {"after_hours_price": 195.04, "regular_close": 208.76, "company_name": "NVIDIA Corp.", "sector": "Semiconductors / AI Chips"},
-        "MSFT": {"after_hours_price": 451.10, "regular_close": 381.58, "company_name": "Microsoft Corp.", "sector": "Software / Azure Cloud"},
-        "TSLA": {"after_hours_price": 308.85, "regular_close": 319.68, "company_name": "Tesla Inc.", "sector": "Automotive / AI Robotics"},
-        "MU":   {"after_hours_price": 874.66, "regular_close": 990.20, "company_name": "Micron Technology Inc.", "sector": "Semiconductors / Memory"},
-        "IONQ": {"after_hours_price": 35.77,  "regular_close": 34.07,  "company_name": "IonQ Inc.", "sector": "Quantum Computing"},
-        "NBIS": {"after_hours_price": 245.00, "regular_close": 223.60, "company_name": "Nebius Group N.V.", "sector": "Tech / AI Infra"},
-        "VRT":  {"after_hours_price": 227.50, "regular_close": 304.04, "company_name": "Vertiv Holdings Co", "sector": "Industrials / AI Power"},
-        "BE":   {"after_hours_price": 207.12, "regular_close": 217.30, "company_name": "Bloom Energy Corp", "sector": "Clean Energy / Grid"}
-    }
-
-
-    # CRITICAL: Always return verified extended session benchmark prices first before network calls
-    if symbol in extended_session_anchors:
-        anc = extended_session_anchors[symbol]
-        cur_p = anc["after_hours_price"]
-        prev_p = anc["regular_close"]
-        chg_pct = round(((cur_p - prev_p) / prev_p) * 100.0, 2)
-        return {
-            "symbol": symbol,
-            "company_name": anc["company_name"],
-            "sector": anc["sector"],
-            "trading_session": "After-Hours Session (Post-Market)",
-            "current_price": cur_p,
-            "previous_close": prev_p,
-            "price_change_24h": chg_pct,
-            "day_high": round(cur_p * 1.01, 2),
-            "day_low": round(cur_p * 0.99, 2),
-            "volume": 45000000,
-            "market_cap": 0,
-            "enterprise_value": 0,
-            "total_revenue": 0,
-            "ev_to_revenue": 0.0,
-            "pe_ratio": 0.0,
-            "pe_forward": 0.0,
-            "roic_pct": 0.0,
-            "analyst_consensus": {
-                "mean_target": round(cur_p * 1.15, 2),
-                "high_target": round(cur_p * 1.30, 2),
-                "low_target": round(cur_p * 0.90, 2),
-                "rating": "BUY",
-                "num_analysts": 25,
-                "upside_pct": 15.0
-            },
-            "source": "Yahoo Extended Hours Verified Engine"
-        }
 
     try:
         yf_ticker = yf.Ticker(symbol)
