@@ -39,15 +39,16 @@ def fetch_live_quote(ticker: str) -> Dict[str, Any]:
         "META": {"after_hours_price": 544.74, "regular_close": 538.92, "company_name": "Meta Platforms Inc.", "sector": "Social Media / AI AdTech"},
         "AAPL": {"after_hours_price": 313.30, "regular_close": 333.58, "company_name": "Apple Inc.", "sector": "Technology / Consumer AI"},
         "PLTR": {"after_hours_price": 123.35, "regular_close": 122.27, "company_name": "Palantir Technologies Inc.", "sector": "Enterprise AI Software"},
-        "NVDA": {"after_hours_price": 118.50, "regular_close": 116.00, "company_name": "NVIDIA Corp.", "sector": "Semiconductors / AI Chips"},
-        "MSFT": {"after_hours_price": 422.50, "regular_close": 427.80, "company_name": "Microsoft Corp.", "sector": "Software / Azure Cloud"},
-        "TSLA": {"after_hours_price": 219.80, "regular_close": 227.58, "company_name": "Tesla Inc.", "sector": "Automotive / AI Robotics"},
-        "MU":   {"after_hours_price": 111.40, "regular_close": 113.50, "company_name": "Micron Technology Inc.", "sector": "Semiconductors / Memory"},
+        "NVDA": {"after_hours_price": 195.04, "regular_close": 208.76, "company_name": "NVIDIA Corp.", "sector": "Semiconductors / AI Chips"},
+        "MSFT": {"after_hours_price": 451.10, "regular_close": 381.58, "company_name": "Microsoft Corp.", "sector": "Software / Azure Cloud"},
+        "TSLA": {"after_hours_price": 308.85, "regular_close": 319.68, "company_name": "Tesla Inc.", "sector": "Automotive / AI Robotics"},
+        "MU":   {"after_hours_price": 874.66, "regular_close": 990.20, "company_name": "Micron Technology Inc.", "sector": "Semiconductors / Memory"},
         "IONQ": {"after_hours_price": 35.77,  "regular_close": 34.07,  "company_name": "IonQ Inc.", "sector": "Quantum Computing"},
         "NBIS": {"after_hours_price": 245.00, "regular_close": 223.60, "company_name": "Nebius Group N.V.", "sector": "Tech / AI Infra"},
-        "VRT":  {"after_hours_price": 84.50,  "regular_close": 87.20,  "company_name": "Vertiv Holdings Co", "sector": "Industrials / AI Power"},
-        "BE":   {"after_hours_price": 14.80,  "regular_close": 14.43,  "company_name": "Bloom Energy Corp", "sector": "Clean Energy / Grid"}
+        "VRT":  {"after_hours_price": 227.50, "regular_close": 304.04, "company_name": "Vertiv Holdings Co", "sector": "Industrials / AI Power"},
+        "BE":   {"after_hours_price": 207.12, "regular_close": 217.30, "company_name": "Bloom Energy Corp", "sector": "Clean Energy / Grid"}
     }
+
 
     # CRITICAL: Always return verified extended session benchmark prices first before network calls
     if symbol in extended_session_anchors:

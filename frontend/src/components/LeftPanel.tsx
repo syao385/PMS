@@ -13,20 +13,20 @@ interface LeftPanelProps {
 
 // Comprehensive metadata and extended-hours anchors for Watchlist items
 const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; date: string; time: 'AMC' | 'BMO'; isRecent: boolean }> = {
-  NVDA: { price: 118.50, chg: 2.15, date: '08/27', time: 'AMC', isRecent: true },
+  NVDA: { price: 195.04, chg: -6.57, date: '08/27', time: 'AMC', isRecent: true },
   AAPL: { price: 313.30, chg: -6.08, date: '07/30', time: 'AMC', isRecent: true },
-  MSFT: { price: 422.50, chg: -1.24, date: '07/30', time: 'AMC', isRecent: true },
-  TSLA: { price: 219.80, chg: -3.42, date: '07/23', time: 'AMC', isRecent: false },
-  PLTR: { price: 123.35, chg: 0.88, date: '08/03', time: 'AMC', isRecent: true },
-  MU:   { price: 111.40, chg: -1.85, date: '06/26', time: 'AMC', isRecent: false },
-  IONQ: { price: 8.45,   chg: 3.20,  date: '08/07', time: 'AMC', isRecent: true },
+  MSFT: { price: 451.10, chg: 18.22, date: '07/30', time: 'AMC', isRecent: true },
+  TSLA: { price: 308.85, chg: -3.39, date: '07/23', time: 'AMC', isRecent: false },
+  PLTR: { price: 123.35, chg: 0.88,  date: '08/03', time: 'AMC', isRecent: true },
+  MU:   { price: 874.66, chg: -11.67,date: '06/26', time: 'AMC', isRecent: false },
+  IONQ: { price: 35.77,  chg: 4.99,  date: '08/07', time: 'AMC', isRecent: true },
   NBIS: { price: 245.00, chg: 9.57,  date: '07/28', time: 'BMO', isRecent: true },
-
-  BE:   { price: 14.80,  chg: 2.53,  date: '07/29', time: 'AMC', isRecent: true },
-  VRT:  { price: 84.50,  chg: -3.10, date: '07/29', time: 'AMC', isRecent: true },
+  BE:   { price: 207.12, chg: -4.68, date: '07/29', time: 'AMC', isRecent: true },
+  VRT:  { price: 227.50, chg: -25.17,date: '07/29', time: 'AMC', isRecent: true },
   AMZN: { price: 257.26, chg: 9.24,  date: '07/30', time: 'AMC', isRecent: true },
   META: { price: 544.74, chg: 1.08,  date: '07/29', time: 'AMC', isRecent: true }
 };
+
 
 // Finviz-style Earnings Release Matrix (Exact match with Finviz Widget Layout)
 interface FinvizCalendarRow {
