@@ -1,96 +1,93 @@
-# 🏛️ Revised Implementation Plan: UI Architect Streamlining & Duplication Elimination
+# 🏛️ Implementation Plan: Left & Right Panel UI Redesign, Earnings Calendar & News Portal Optimization
 
-## Executive Summary
+## Goal Description
 
-Based on your feedback, we have conducted a full **UI Architect Code Review** to eliminate duplicated features, consolidate overlapping functionalities, and streamline the user interface for institutional efficiency.
-
----
-
-## I. Functional Duplication Analysis & Consolidation Plan
-
-### 1. Thesis Drift Delta (`/thesis-drift`) vs. Earnings Review (`/earnings-review`)
-- **Audit Finding**: **DUPLICATE**. 
-- In [skill_engine.py](file:///c:/Users/jfan/Documents/institutional-pms/backend/app/services/skill_engine.py), `/earnings-review` already performs multi-quarter SEC filing comparison in **Step 5 (4-Qtr Benchmark Table)** and updates the thesis stance in **Step 6 Question 2 (Thesis Impact: Reinforced vs Weakened)**.
-- **Streamlining Decision**: Consolidate quarterly thesis drift tracking directly inside `/earnings-review` (Step 5 & Q2) and `/portfolio-review`. Remove standalone duplicate tab.
-
----
-
-### 2. News Pulse Attribution (`/news-pulse`) vs. Earnings Review (`/earnings-review`)
-- **Audit Finding**: **DUPLICATE**.
-- In [skill_engine.py](file:///c:/Users/jfan/Documents/institutional-pms/backend/app/services/skill_engine.py), `/earnings-review` already incorporates the **💡 AI 财报与股价偏离因果解构 (AI Discrepancy & Price Action Attribution)** block in Step 6, which attributes post-earnings price volatility across 4 institutional vectors (Fundamental Whisper Miss, Multiple Compression, Order Backlog, and CapEx Lead-Lag).
-- **Streamlining Decision**: Keep rapid price move attribution unified inside `/earnings-review` Step 6 and `/portfolio-review`.
+This implementation plan details the full UI redesign of `LeftPanel.tsx` and `RightPanel.tsx` to streamline the user interface and enhance institutional functionality:
+1. **Left Panel Redesign**:
+   - Scrollable Portfolio Watchlist with default 10 tickers (`NVDA`, `AAPL`, `MSFT`, `TSLA`, `PLTR`, `MU`, `IONQ`, `NBIS`, `VRT`, `BE`).
+   - Watchlist columns: **Symbol**, **Earnings Date** (Upcoming `AMC`/`BMO` within 7 days, or passed date), **Real-Time Price** (including premarket/after-hours), and **% Change** (from yesterday close).
+   - **Remove non-functional components**: Remove "In-Play Watchlist" and "Paper Trading Simulator".
+   - **Add "Earnings Calendar This Week"**: Displaying **Symbol** and **Upcoming Earnings Date**. Clicking any symbol selects that ticker and loads its latest earnings review report in the middle panel.
+2. **Right Panel News Portal Redesign**:
+   - Display **10 latest company news articles** specifically for the clicked ticker.
+   - Sort descending by published date/time.
+   - Display **Headline**, **Publisher Source**, and **Published Timestamp**.
 
 ---
 
-### 3. Removal of 8-Step UI Sub-Filter Buttons in `AiSkillsHub.tsx`
-- **Audit Finding**: **REDUNDANT UI CLUTTER**.
-- In [AiSkillsHub.tsx](file:///c:/Users/jfan/Documents/institutional-pms/frontend/src/components/AiSkillsHub.tsx), the 8 sub-filter buttons (`Step 1: Primary Data`, `Step 2: Core Financial Tables`, ... `Step 8: Financial Audit Log`) force the user to click separate buttons to slice the report, duplicating the full document view.
-- **Streamlining Decision**: **Remove the 8-Step sub-filter bar entirely**. Render the complete 8-step primary source review in a single, publication-grade, seamless document flow.
+## User Review Required
+
+> [!IMPORTANT]
+> **No Code Changes Have Been Made Yet**. Please review the proposed component layouts and data structure updates below before we begin code execution.
 
 ---
 
-## II. Streamlined UI Architecture Comparison
+## Component Layout & Specification
 
-```mermaid
-graph TD
-    subgraph Legacy Architecture (Redundant & Cluttered)
-        L_Tabs["7 Top Tabs: Skills | Memo | Scanner | Compare | Thesis Drift (DUP) | News Pulse (DUP) | Journal"]
-        L_Hub["AiSkillsHub UI"] --> L_Steps["8 Duplicate Step Buttons: [Step 1] [Step 2] ... [Step 8]"]
-    end
+### 1. Left Panel (`LeftPanel.tsx`)
 
-    subgraph Streamlined Institutional Architecture (Clean & Non-Redundant)
-        S_Tabs["5 Clean Workspaces: 📊 Skills Hub | 📄 Research Memo | 🔍 Universal Screener | 🏛️ Portfolio & Risk Review | 📓 Trade Journal"]
-        S_Hub["AiSkillsHub (/earnings-review)"] --> S_Doc["Single Seamless Publication-Grade Document<br/>(Clean Step 1 -> Step 8 Flow)"]
-    end
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ 📈 PORTFOLIO WATCHLIST (Scrollable • Default 10 Tickers)                               │
+├─────────┬──────────────────────┬─────────────┬─────────────┬───────────────────────────┤
+│ Symbol  │ Earnings Date        │ Price       │ % Change    │ Action                    │
+├─────────┼──────────────────────┼─────────────┼─────────────┼───────────────────────────┤
+│ VRT     │ 07/29 AMC 🔴         │ $84.50      │ -3.10%      │ [Trash Icon]              │
+│ NBIS    │ 07/28 BMO 🟢         │ $24.50      │ +9.58%      │ [Trash Icon]              │
+│ BE      │ 07/29 AMC 🟢         │ $14.80      │ +2.53%      │ [Trash Icon]              │
+│ NVDA    │ 08/27 AMC            │ $125.00     │ +1.25%      │ [Trash Icon]              │
+└─────────┴──────────────────────┴─────────────┴─────────────┴───────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ 📅 EARNINGS CALENDAR THIS WEEK (Click ticker to load report)                           │
+├─────────┬──────────────────────────────────┬───────────────────────────────────────────┤
+│ Symbol  │ Upcoming Earnings Date           │ Timing Status                             │
+├─────────┼──────────────────────────────────┼───────────────────────────────────────────┤
+│ VRT     │ 2026-07-29                       │ After Market Close (AMC) 🟢               │
+│ BE      │ 2026-07-29                       │ After Market Close (AMC) 🟢               │
+│ NBIS    │ 2026-07-28                       │ Before Market Open (BMO) 🟢               │
+│ AAPL    │ 2026-07-31                       │ After Market Close (AMC)                  │
+└─────────┴──────────────────────────────────┴───────────────────────────────────────────┘
+```
+
+### 2. Right Panel (`RightPanel.tsx`)
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ 📰 NEWS PORTAL (10 Latest Company News for Selected Ticker - Descending Order)          │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ • Vertiv (VRT) Q2 2026 Earnings Analysis: Revenue vs Consensus                         │
+│   Yahoo Finance • 2026-07-29 16:30:00 EST                                              │
+│ • Datacenter Power Infrastructure Demand Trends Ahead of Q3                            │
+│   Reuters • 2026-07-28 14:15:00 EST                                                    │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Proposed File Changes (Pending Your Approval)
+## Proposed Code Changes
 
-### 1. Frontend Streamlining
-#### [MODIFY] [AiSkillsHub.tsx](file:///c:/Users/jfan/Documents/institutional-pms/frontend/src/components/AiSkillsHub.tsx)
-- Remove `EARNINGS_STEPS` array and `activeStepId` filter bar.
-- Render full 8-step earnings report seamlessly without sub-filter button clutter.
+#### [MODIFY] [data_fetcher.py](file:///c:/Users/jfan/Documents/institutional-pms/backend/app/services/data_fetcher.py)
+- Update `fetch_live_news(symbol, count=10)` to return 10 items, extracting publication timestamp and sorting in descending order.
+- Add `fetch_weekly_earnings_calendar()` returning earnings dates and AMC/BMO timing for portfolio symbols.
 
-#### [MODIFY] [MiddlePanel.tsx](file:///c:/Users/jfan/Documents/institutional-pms/frontend/src/components/MiddlePanel.tsx)
-- Streamline top navigation tabs into **5 Core Workspaces**:
-  1. 📊 **AI Berkshire Skills Hub**
-  2. 📄 **AI Research Memo** (4-Master Deep Research & Mirror Test)
-  3. 🔍 **Universal Screener** (7-Hard Rule & Magna Scanner)
-  4. 🏛️ **Portfolio & Risk Review** (Multi-Factor Synthesis: Macro + Sector + Sentiment + Technicals + Positions)
-  5. 📓 **Trade Journal** (Institutional Execution Log)
-- Remove standalone `Thesis Drift Delta` and `News Pulse Attribution` tabs from `MiddlePanel.tsx` (their logic is fully consolidated in Skills Hub and Portfolio Review).
+#### [MODIFY] [LeftPanel.tsx](file:///c:/Users/jfan/Documents/institutional-pms/frontend/src/components/LeftPanel.tsx)
+- Add vertical scrollbar container to Watchlist table with 4 columns: Symbol, Earnings Date (with +/- 7 day indicator), Real-time Price, % Change.
+- Remove In-Play Watchlist & Paper Trading sections.
+- Add "Earnings Calendar This Week" table with clickable ticker rows.
 
----
-
-### 2. Backend Multi-Factor Integration
-#### [MODIFY] [skill_engine.py](file:///c:/Users/jfan/Documents/institutional-pms/backend/app/services/skill_engine.py)
-- Expand `/portfolio-review` skill to synthesize:
-  - Fundamental 3-Horizon Stance (from `/earnings-review`)
-  - Macro Factors (Rates & CPI Sensitivity)
-  - Sector Rotation Beta
-  - Technical Regimes (200-day SMA, Anchor VWAP, ATR stops)
-  - Portfolio Sizing (Kelly Criterion & max $15\%$ limits)
-
----
-
-## User Review & Approval Required
-
-> [!IMPORTANT]
-> **No Code Changes Have Been Made Yet**. Please review and approve these streamlined changes:
-> 1. **Remove 8-Step Sub-Filter Bar** in `AiSkillsHub.tsx` to display one clean, publication-grade earnings report.
-> 2. **Consolidate Thesis Drift & News Pulse** into `/earnings-review` and `/portfolio-review`, streamlining top-level tabs into **5 Core Workspaces**.
-> 3. **Implement Multi-Factor Synthesis** (Macro + Sector + Technicals) inside `/portfolio-review`.
+#### [MODIFY] [RightPanel.tsx](file:///c:/Users/jfan/Documents/institutional-pms/frontend/src/components/RightPanel.tsx)
+- Restructure news list to show 10 latest company news items for the active ticker, sorted in descending order of published date.
 
 ---
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `python test_dynamic_q4_matrix.py` to ensure Question 4 strategy matrix branching tests pass.
-- Run `python test_nbis_and_watchlist.py` to ensure cross-symbol data isolation tests pass.
+- Run `python test_dynamic_q4_matrix.py` to ensure core earnings review tests pass.
+- Run `python test_nbis_and_watchlist.py` to verify watchlist integrity.
 
 ### Manual UI Verification
-- Verify in browser that `AiSkillsHub` renders clean 8-step reports without step filter button clutter.
-- Verify in browser that the top workspace tab bar is streamlined, fast, and responsive.
+- Verify Watchlist table in Left Panel displays 4 columns with vertical scrolling.
+- Verify Earnings Calendar displays upcoming earnings and clicking a row loads the ticker's report.
+- Verify Right Panel displays 10 latest news items sorted in descending order for the clicked ticker.

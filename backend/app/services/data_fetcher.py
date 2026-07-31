@@ -159,43 +159,57 @@ def fetch_alpaca_live_quote(symbol: str) -> Dict[str, Any]:
     }
 
 
-def fetch_live_news(symbol: str, count: int = 5) -> List[Dict[str, Any]]:
+from datetime import datetime, timezone
+
+def fetch_live_news(symbol: str, count: int = 10) -> List[Dict[str, Any]]:
     news_list = []
+    sym = symbol.upper().strip()
     try:
-        yf_ticker = yf.Ticker(symbol)
+        yf_ticker = yf.Ticker(sym)
         raw_news = yf_ticker.news or []
 
-        for idx, item in enumerate(raw_news[:count]):
-            title = item.get("title") or item.get("headline") or f"{symbol} Market Update"
-            link = item.get("link") or f"https://finance.yahoo.com/quote/{symbol}/news"
+        for idx, item in enumerate(raw_news):
+            title = item.get("title") or item.get("headline") or f"{sym} Market Update"
+            link = item.get("link") or f"https://finance.yahoo.com/quote/{sym}/news"
             publisher = item.get("publisher") or item.get("source") or "Yahoo Finance"
+            
+            pub_ts = item.get("providerPublishTime") or item.get("publishTime")
+            if pub_ts:
+                pub_time_str = datetime.fromtimestamp(pub_ts, timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+            else:
+                pub_time_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
             news_list.append({
-                "id": f"news_{symbol}_{idx}",
+                "id": f"news_{sym}_{idx}",
                 "title": title,
                 "url": link,
                 "source": publisher,
-                "feed": "GOOGLE" if "Google" in publisher else ("WSJ" if "WSJ" in publisher or "Journal" in publisher else "CNBC"),
-                "time": "Recent",
+                "pub_timestamp": pub_ts or 0,
+                "time": pub_time_str,
                 "category": "EARNINGS" if "earnings" in title.lower() or "revenue" in title.lower() else "MARKETS",
                 "sentiment": "positive" if any(w in title.lower() for w in ["gain", "up", "beat", "high", "rally", "growth"]) else ("negative" if any(w in title.lower() for w in ["drop", "fall", "down", "miss", "cut"]) else "neutral")
             })
     except Exception as e:
-        logger.warning(f"Error fetching live news for {symbol}: {e}")
+        logger.warning(f"Error fetching live news for {sym}: {e}")
+
+    # Sort descending by published timestamp
+    news_list.sort(key=lambda x: x.get("pub_timestamp", 0), reverse=True)
+    news_list = news_list[:count]
 
     if not news_list:
         news_list.append({
-            "id": f"news_{symbol}_default",
-            "title": f"Live Financial Coverage & Market Analysis for {symbol}",
-            "url": f"https://finance.yahoo.com/quote/{symbol}/news",
+            "id": f"news_{sym}_default",
+            "title": f"Live Primary Financial Coverage & SEC EDGAR Analysis for {sym}",
+            "url": f"https://finance.yahoo.com/quote/{sym}/news",
             "source": "Yahoo Finance Live",
-            "feed": "ALL",
-            "time": "Just now",
+            "pub_timestamp": int(datetime.now(timezone.utc).timestamp()),
+            "time": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
             "category": "MARKETS",
             "sentiment": "neutral"
         })
 
     return news_list
+
 
 
 def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> Dict[str, Any]:

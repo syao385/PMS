@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { executeSkill } from '../services/api';
-import { RefreshCw, ShieldCheck, Zap, Layers, Sparkles, CheckCircle2, Cpu, FileCheck, Table, BarChart3, HelpCircle, FileText, Printer } from 'lucide-react';
+import { RefreshCw, Zap, Layers, Sparkles, CheckCircle2, Cpu, FileCheck, Printer } from 'lucide-react';
+
 
 
 interface SkillItem {
@@ -82,17 +83,7 @@ const DEFAULT_CATEGORIES: CategoryItem[] = [
   }
 ];
 
-const EARNINGS_STEPS = [
-  { id: 'all', label: '📋 All 8 Steps', icon: Layers },
-  { id: 'step1', label: 'Step 1: Primary Data & Rating', icon: FileCheck },
-  { id: 'step2', label: 'Step 2: Core Financial Tables', icon: Table },
-  { id: 'step3', label: 'Step 3: MD&A Tone Audit', icon: ShieldCheck },
-  { id: 'step4', label: 'Step 4: Footnotes Checklist', icon: HelpCircle },
-  { id: 'step5', label: 'Step 5: 4-Qtr & 3-Yr Trends', icon: BarChart3 },
-  { id: 'step6', label: 'Step 6: Earnings Summary', icon: FileText },
-  { id: 'step7', label: 'Step 7: 4-Master Report', icon: Sparkles },
-  { id: 'step8', label: 'Step 8: Financial Audit Log', icon: Zap }
-];
+
 
 interface AiSkillsHubProps {
   watchlist: string[];
@@ -552,29 +543,7 @@ export function AiSkillsHub({ watchlist, currentTicker, onSelectTicker }: AiSkil
         })}
       </div>
 
-      {/* Interactive 8-Step UI Navigator Bar for /earnings-review */}
-      {activeSkillId === 'earnings-review' && (
-        <div className="bg-[#0b0e18] border-b border-slate-800 px-4 py-2 flex items-center gap-2 overflow-x-auto">
-          {EARNINGS_STEPS.map((step) => {
-            const Icon = step.icon;
-            const isStepActive = step.id === activeStepId;
-            return (
-              <button
-                key={step.id}
-                onClick={() => setActiveStepId(step.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all whitespace-nowrap ${
-                  isStepActive
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 border border-indigo-400'
-                    : 'bg-[#141b2b] text-slate-400 hover:bg-[#1a2338] hover:text-slate-200 border border-slate-800'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5 text-indigo-400" />
-                <span>{step.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+
 
       {/* Main Tab Content Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
