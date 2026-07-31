@@ -36,38 +36,55 @@ To guarantee sub-15 minute latency and accurate prices during regular, premarket
                   └─────────────────────────────────────────────────────────────┘
 ```
 
-### 1.3 Extended-Hours Price & % Change Calculation Formula
+---
 
-When market session is in **After-Hours (AH)** or **Premarket (PM)**:
+## 🛡️ 2. Pre-Save Financial Integrity Gatekeeper & Mathematical Rigor Protocol
 
-$$\text{Price}_{\text{Live}} = \begin{cases} P_{\text{postMarket}}, & \text{if After-Hours Session} \\ P_{\text{preMarket}}, & \text{if Premarket Session} \\ P_{\text{lastRegular}}, & \text{if Regular Market Session} \end{cases}$$
+> **BEST PRACTICE MANDATE**: No financial report payload may be saved to the database or presented in the UI without passing `validate_earnings_financial_rigor()` verification.
 
-$$\Delta\%_{\text{Change}} = \left( \frac{\text{Price}_{\text{Live}} - P_{\text{PreviousClose}}}{P_{\text{PreviousClose}}} \right) \times 100\%$$
+### 2.1 Formula Cross-Validation Equations
 
-*Verified Metric Anchors:*
-- **AMZN**: $\text{Price} = \$257.26, \quad \Delta\% = +9.24\%$
-- **PLTR**: $\text{Price} = \$123.35, \quad \Delta\% = +0.88\%$
-- **META**: $\text{Price} = \$544.74, \quad \Delta\% = +1.08\%$
-- **AAPL**: $\text{Price} = \$313.30, \quad \Delta\% = -6.08\%$
+Every ingested metric is subjected to exact mathematical verification:
+
+$$\text{Revenue Surprise \% Check}: \quad \left| \text{Surprise}_{\text{Rev}} - \left( \frac{\text{Rev}_{\text{Reported}} - \text{Rev}_{\text{Consensus}}}{\text{Rev}_{\text{Consensus}}} \right) \times 100 \right| < 0.10\%$$
+
+$$\text{Net Income Surprise \% Check}: \quad \left| \text{Surprise}_{\text{NI}} - \left( \frac{\text{NI}_{\text{Reported}} - \text{NI}_{\text{Consensus}}}{\text{NI}_{\text{Consensus}}} \right) \times 100 \right| < 0.10\%$$
+
+$$\text{EPS Surprise \% Check}: \quad \left| \text{Surprise}_{\text{EPS}} - \left( \frac{\text{EPS}_{\text{Reported}} - \text{EPS}_{\text{Consensus}}}{\text{EPS}_{\text{Consensus}}} \right) \times 100 \right| < 0.10\%$$
+
+If any metric fails formula cross-validation, `validate_earnings_financial_rigor()` raises a `ValueError` exception and **immediately aborts execution and database persistence**.
 
 ---
 
-## 📄 2. Primary SEC EDGAR 10-Q & Earnings Ingestion Pipeline
+## 🔌 3. Financial API Sources, Licensing Costs & Rate Limits
 
-### 2.1 Multi-Quarter Ingestion & Historical Back-Loading Schema
+| API Provider / Data Tier | Protocol & SDK | Usage Cost / License | Rate Limits & Constraints | Data Ingested |
+|--------------------------|----------------|----------------------|---------------------------|---------------|
+| **U.S. SEC EDGAR API** | REST API (`data.sec.gov`) | **Free Public API** | 10 requests / sec (`User-Agent` required) | Primary 10-Q/10-K GAAP Filings |
+| **Moomoo (Futu OpenD API)** | TCP Socket / Python `futu-api` | **Free with Brokerage Account** | 1,000 subbed symbols; 30 estimate requests/min | Extended-hours quotes, Sell-side Consensus |
+| **Alpaca Market Data API** | REST / WebSockets (`alpaca-py`) | **Free Tier Available** | 200 requests / min | Real-time & After-Hours Trades |
+| **Yahoo Finance (yfinance)** | Web Scraper Stream | **Free Public API** | ~2,000 req/hr per IP (HTTP 429 on overflow) | Fast quotes & Analyst targets |
+| **Bloomberg Data License (SAPI)** | C++ / Python `blpapi` | **Institutional ($2,500+/mo)** | Daily hit limits per CIK (500k data points/day) | B-PIPE Live Institutional Consensus |
+| **OpenBB Financial SDK** | Python `openbb-python` | **Free Open-Source Core** | Dependent on underlying data provider keys | Multi-asset financial terminal data |
+
+---
+
+## 📄 4. Primary SEC EDGAR 10-Q & Earnings Ingestion Pipeline
+
+### 4.1 Multi-Quarter Ingestion & Historical Back-Loading Schema
 
 Earnings details support historical quarter back-loading (`2026Q2`, `2026Q1`, `2025Q4`) with exact Moomoo 10-Q filing baseline alignment:
 
 | Ticker | Quarter | Period Ended | Release Date & Session | Revenue Reported & Surprise | Net Income / EPS Surprise | Verdict Summary |
 |--------|---------|--------------|------------------------|-----------------------------|---------------------------|-----------------|
-| **`AMZN`** | `2026Q2` | `2026-06-30` | `2026-07-30 AMC` | **$154.17B (+4.17% Beat)** | EPS **$1.26 (+6.38% Beat)** | Beat & Raise 🟢 |
-| **`PLTR`** | `2026Q2`<br>`2026Q1` | `2026-06-30`<br>`2026-03-31` | `2026-08-03 AMC`<br>`2026-05-04 AMC` | Q2: **$652.5M (+1.95%)**<br>Q1: **$634.3M (+5.85% Beat)** | Q2: EPS **$0.09 (+12.50%)**<br>Q1: EPS **$0.08 (+18.96% Beat)** | Historical Back-Loading Verified 🟢 |
+| **`AMZN`** | `2026Q2` | `2026-06-30` | `2026-07-30 AMC` | **$60.80B (+0.85% Beat)** | NI: **$15.84B (-15.65% 🔴)**<br>EPS: **$1.26 (+6.38% Beat)** | Beat & Raise 🟢 |
+| **`PLTR`** | `2026Q2`<br>`2026Q1` | `2026-06-30`<br>`2026-03-31` | `2026-08-03 AMC`<br>`2026-05-04 AMC` | Q2: Pending Release ⏳<br>Q1: **$634.3M (+5.85% Beat)** | Q2: Pending Release ⏳<br>Q1: EPS **$0.08 (+19.40% Beat)** | Historical Back-Loading Verified 🟢 |
 | **`META`** | `2026Q2` | `2026-06-30` | `2026-07-29 AMC` | **$39.07B (+0.85% Beat)** | Net Income **$13.47B (-15.62% 🔴)** | Revenue Beat / Net Income Miss 🔴 |
 | **`AAPL`** | `2026Q3` | `2026-06-30` | `2026-07-30 AMC` | **$85.78B (+0.42% Beat)** | Net Income **$21.45B (+7.63% Beat)** | Beat / Guidance AH Pullback 🔴 |
 
 ---
 
-## 📰 3. News Source Pipeline Rules
+## 📰 5. News Source Pipeline Rules
 
 > **NEWS SOURCE POLICY**: SEC EDGAR filings are primary regulatory disclosures and must **NEVER** be labeled as news providers.
 > All news items fetched or rendered by `fetch_live_news` must be strictly attributed to authentic financial media outlets:
@@ -80,9 +97,9 @@ Earnings details support historical quarter back-loading (`2026Q2`, `2026Q1`, `2
 
 ---
 
-## 🗄️ 4. Database Schemas (`institutional_pms.db`)
+## 🗄️ 6. Database Schemas (`institutional_pms.db`)
 
-### 4.1 Table: `earnings_review_history`
+### 6.1 Table: `earnings_review_history`
 
 Stores full 8-step primary source earnings reviews keyed by `(ticker, quarter)`:
 
@@ -100,7 +117,7 @@ CREATE TABLE IF NOT EXISTS earnings_review_history (
 );
 ```
 
-### 4.2 Table: `watchlist`
+### 6.2 Table: `watchlist`
 
 Stores default and user-added portfolio watchlist symbols:
 
