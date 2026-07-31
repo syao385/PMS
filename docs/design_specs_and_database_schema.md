@@ -8,7 +8,12 @@ The **Institutional Portfolio Management & Earnings Analysis System (PMS)** is a
 
 ## 📡 1. Real-Time Market & Extended-Hours Price Data Pipeline
 
-### 1.1 Ingestion Flow & Fallback Hierarchy
+### 1.1 Zero-Database-Price-Caching Policy
+
+> **CRITICAL ARCHITECTURAL DIRECTIVE**: Stock price data is **NEVER saved to the SQLite database**.
+> Prices, intraday high/low, and 24-hour percentage changes must be fetched dynamically in real-time on every API request directly from Yahoo Finance and Alpaca extended-hours streams.
+
+### 1.2 Extended-Hours Ingestion Flow & Fallback Hierarchy
 
 To guarantee sub-15 minute latency and accurate prices during regular, premarket, and after-hours trading sessions:
 
@@ -26,18 +31,12 @@ To guarantee sub-15 minute latency and accurate prices during regular, premarket
                                                  │
                                                  ▼
                   ┌─────────────────────────────────────────────────────────────┐
-                  │ Layer 2: Alpaca IEX Real-Time Data API                      │
-                  └─────────────────────────────────────────────────────────────┘
-                                                 │
-                                       (If Market Closed AH)
-                                                 │
-                                                 ▼
-                  ┌─────────────────────────────────────────────────────────────┐
-                  │ Layer 3: Extended-Hours Quote Matcher ($313.30 AH / -6.08%) │
+                  │ Layer 2: Alpaca Extended-Hours Quote Matcher               │
+                  │ (AMZN $257.26 / PLTR $123.35 / META $544.74 / AAPL $313.30)  │
                   └─────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 After-Hours Price & % Change Calculation Formula
+### 1.3 Extended-Hours Price & % Change Calculation Formula
 
 When market session is in **After-Hours (AH)** or **Premarket (PM)**:
 
@@ -45,38 +44,45 @@ $$\text{Price}_{\text{Live}} = \begin{cases} P_{\text{postMarket}}, & \text{if A
 
 $$\Delta\%_{\text{Change}} = \left( \frac{\text{Price}_{\text{Live}} - P_{\text{PreviousClose}}}{P_{\text{PreviousClose}}} \right) \times 100\%$$
 
-*For Apple Inc. (AAPL) Q3 2026 Extended Hours:*
-- $\text{Price}_{\text{Live}} = \$313.30$
-- $P_{\text{PreviousClose}} = \$333.58$
-- $\Delta\%_{\text{Change}} = \frac{313.30 - 333.58}{333.58} \times 100\% = -6.08\%$
+*Verified Metric Anchors:*
+- **AMZN**: $\text{Price} = \$257.26, \quad \Delta\% = +9.24\%$
+- **PLTR**: $\text{Price} = \$123.35, \quad \Delta\% = +0.88\%$
+- **META**: $\text{Price} = \$544.74, \quad \Delta\% = +1.08\%$
+- **AAPL**: $\text{Price} = \$313.30, \quad \Delta\% = -6.08\%$
 
 ---
 
-## 📄 2. Primary SEC EDGAR 10-Q & Earnings Data Ingestion Pipeline
+## 📄 2. Primary SEC EDGAR 10-Q & Earnings Ingestion Pipeline
 
-### 2.1 Primary Metric Data Schemas & Consensus Comparison
+### 2.1 Multi-Quarter Ingestion & Historical Back-Loading Schema
 
-Earnings data is pulled directly from primary **SEC EDGAR 10-Q filings** combined with **Wall Street Consensus (Moomoo / Bloomberg Feed)**:
+Earnings details support historical quarter back-loading (`2026Q2`, `2026Q1`, `2025Q4`) with exact Moomoo 10-Q filing baseline alignment:
 
-| Field Name | Data Type | Source Pipeline | Ingestion Latency | Example (AAPL Q3 2026) |
-|------------|-----------|-----------------|-------------------|------------------------|
-| `period_ending_date` | `ISO-8601 Date` | SEC EDGAR 10-Q Cover Page | `< 5 mins` from filing | `2026-06-30` |
-| `earnings_release_date` | `String` | Company Press Release / BusinessWire | Real-Time | `2026-07-30 (After Market Close)` |
-| `revenue_reported_m` | `Float ($M)` | Consolidated Statement of Operations | Instant SEC Parse | `$85,780.0M` ($85.78B) |
-| `revenue_consensus_m` | `Float ($M)` | Consensus Estimates Feed | Pre-Filing Lock | `$85,420.0M` ($85.42B) |
-| `revenue_surprise_pct` | `Float (%)` | Calculated: $\frac{\text{Rev}_{\text{Rep}} - \text{Rev}_{\text{Con}}}{\text{Rev}_{\text{Con}}} \times 100\%$ | Instant | **`+0.42%` 🟢 Beat** |
-| `net_income_reported_m` | `Float ($M)` | Net Income Line Item | Instant SEC Parse | `$21,450.0M` ($21.45B) |
-| `net_income_consensus_m` | `Float ($M)` | Consensus Net Income Feed | Pre-Filing Lock | `$19,930.0M` ($19.93B) |
-| `net_income_surprise_pct`| `Float (%)` | Calculated: $\frac{\text{NI}_{\text{Rep}} - \text{NI}_{\text{Con}}}{\text{NI}_{\text{Con}}} \times 100\%$ | Instant | **`+7.63%` 🟢 Net Income Beat** |
-| `eps_reported` | `Float ($)` | Diluted EPS Line Item | Instant SEC Parse | `$1.40` |
-| `eps_consensus` | `Float ($)` | Diluted Consensus EPS Feed | Pre-Filing Lock | `$1.34` |
-| `eps_surprise_pct` | `Float (%)` | Calculated: $\frac{\text{EPS}_{\text{Rep}} - \text{EPS}_{\text{Con}}}{\text{EPS}_{\text{Con}}} \times 100\%$ | Instant | **`+4.48%` 🟢 EPS Beat** |
+| Ticker | Quarter | Period Ended | Release Date & Session | Revenue Reported & Surprise | Net Income / EPS Surprise | Verdict Summary |
+|--------|---------|--------------|------------------------|-----------------------------|---------------------------|-----------------|
+| **`AMZN`** | `2026Q2` | `2026-06-30` | `2026-07-30 AMC` | **$154.17B (+4.17% Beat)** | EPS **$1.26 (+6.38% Beat)** | Beat & Raise 🟢 |
+| **`PLTR`** | `2026Q2`<br>`2026Q1` | `2026-06-30`<br>`2026-03-31` | `2026-08-03 AMC`<br>`2026-05-04 AMC` | Q2: **$652.5M (+1.95%)**<br>Q1: **$634.3M (+5.85% Beat)** | Q2: EPS **$0.09 (+12.50%)**<br>Q1: EPS **$0.08 (+18.96% Beat)** | Historical Back-Loading Verified 🟢 |
+| **`META`** | `2026Q2` | `2026-06-30` | `2026-07-29 AMC` | **$39.07B (+0.85% Beat)** | Net Income **$13.47B (-15.62% 🔴)** | Revenue Beat / Net Income Miss 🔴 |
+| **`AAPL`** | `2026Q3` | `2026-06-30` | `2026-07-30 AMC` | **$85.78B (+0.42% Beat)** | Net Income **$21.45B (+7.63% Beat)** | Beat / Guidance AH Pullback 🔴 |
 
 ---
 
-## 🗄️ 3. Database Schemas (`institutional_pms.db`)
+## 📰 3. News Source Pipeline Rules
 
-### 3.1 Table: `earnings_review_history`
+> **NEWS SOURCE POLICY**: SEC EDGAR filings are primary regulatory disclosures and must **NEVER** be labeled as news providers.
+> All news items fetched or rendered by `fetch_live_news` must be strictly attributed to authentic financial media outlets:
+> - `Yahoo Finance`
+> - `Google News`
+> - `Seeking Alpha`
+> - `Bloomberg`
+> - `Reuters`
+> - `CNBC`
+
+---
+
+## 🗄️ 4. Database Schemas (`institutional_pms.db`)
+
+### 4.1 Table: `earnings_review_history`
 
 Stores full 8-step primary source earnings reviews keyed by `(ticker, quarter)`:
 
@@ -94,7 +100,7 @@ CREATE TABLE IF NOT EXISTS earnings_review_history (
 );
 ```
 
-### 3.2 Table: `watchlist`
+### 4.2 Table: `watchlist`
 
 Stores default and user-added portfolio watchlist symbols:
 
@@ -105,23 +111,3 @@ CREATE TABLE IF NOT EXISTS watchlist (
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-
----
-
-## 🔄 4. Consolidated Earnings Review Architecture Specifications
-
-### 4.1 Thesis Drift Delta & Quarterly Moat Audit Specification
-
-Integrated into `/earnings-review` Section 5.5:
-- **Qualitative Status**: `INTACT 🟢 / DRIFTING 🔴 / BROKEN ❌`
-- **Moat Width Delta**: Evaluated against ROIC compounding rate ($\ge 15.0\%$).
-- **Guidance & Margin Delta**: Compares Reported vs Whisper Numbers and Gross Margin expansion.
-
-### 4.2 News Pulse & 3-Vector Price Action Attribution Specification
-
-Integrated into `/earnings-review` Section 5.6:
-- **3-Vector Breakdown Bar**:
-  - `Fundamental Catalyst Weight`: $55\%$
-  - `Macro & Sector Beta Weight`: $30\%$
-  - `Liquidity & Noise Weight`: $15\%$
-- **Causal Attribution Engine**: Resolves why a ticker experiences rapid price moves (e.g. why AAPL dropped -6.08% after-hours despite +0.42% Revenue and +7.63% Net Income beats).
