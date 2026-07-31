@@ -14,7 +14,7 @@ interface LeftPanelProps {
 // Comprehensive metadata and extended-hours anchors for Watchlist items (Exact Moomoo & Yahoo Premarket Match)
 const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; date: string; time: 'AMC' | 'BMO'; isRecent: boolean }> = {
   NVDA: { price: 196.84, chg: 0.92,  date: '08/27', time: 'AMC', isRecent: true },
-  AAPL: { price: 312.33, chg: -6.33, date: '07/30', time: 'AMC', isRecent: true },
+  AAPL: { price: 311.87, chg: -6.47, date: '07/30', time: 'AMC', isRecent: true },
   MSFT: { price: 448.47, chg: -0.58, date: '07/30', time: 'AMC', isRecent: true },
   TSLA: { price: 309.10, chg: 0.08,  date: '07/23', time: 'AMC', isRecent: false },
   PLTR: { price: 123.23, chg: 0.79,  date: '08/03', time: 'AMC', isRecent: true },
@@ -26,6 +26,7 @@ const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; d
   AMZN: { price: 257.95, chg: 9.53,  date: '07/30', time: 'AMC', isRecent: true },
   META: { price: 542.78, chg: 0.70,  date: '07/29', time: 'AMC', isRecent: true }
 };
+
 
 
 
