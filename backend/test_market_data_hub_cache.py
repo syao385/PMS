@@ -32,14 +32,17 @@ class TestMarketDataHubCache(unittest.TestCase):
 
 
     def test_cache_hit_speed(self):
-        start = time.time()
-        # Repeated call within TTL window
+        # Warm up cache first
         q1 = fetch_live_quote("AMZN")
+        
+        start = time.time()
+        # Immediate repeated call within 5s TTL window (Pure SQLite Cache Hit)
         q2 = fetch_live_quote("AMZN")
         elapsed = time.time() - start
         
         self.assertEqual(q1["current_price"], q2["current_price"])
         self.assertLess(elapsed, 0.10, "Cached quote fetch must complete in < 100ms")
+
 
     def test_cross_project_amzn_earnings_consistency(self):
         details = fetch_latest_earnings_details("AMZN", "2026Q2")
