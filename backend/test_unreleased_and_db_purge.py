@@ -30,7 +30,8 @@ class TestUnreleasedQuarterAndDbPurge(unittest.TestCase):
         res = execute_skill_runner("earnings-review", "AMZN", params={"quarter": "2026Q2"}, force_refresh=True)
         md = res["report_markdown"]
         
-        self.assertIn("4.17%", md, "AMZN report must contain exact revenue beat +4.17%")
+        self.assertIn("0.85%", md, "AMZN report must contain exact revenue beat +0.85%")
+
         self.assertIn("6.38%", md, "AMZN report must contain exact EPS beat +6.38%")
         self.assertIn("257.26", md, "AMZN report must contain exact live extended hours price $257.26")
         self.assertIn("9.24%", md, "AMZN report must contain exact extended hours surge +9.24%")

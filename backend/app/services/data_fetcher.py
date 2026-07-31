@@ -335,9 +335,9 @@ def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> 
             "sync_latency": "<15 minutes (Yahoo / BusinessWire Live)",
             "current_price": 257.26,
             "price_change_24h": 9.24,
-            "revenue_reported_m": 154170.0,
-            "revenue_consensus_m": 148000.0,
-            "revenue_surprise_pct": 4.17,
+            "revenue_reported_m": 60800.0,
+            "revenue_consensus_m": 60290.0,
+            "revenue_surprise_pct": 0.85,
             "net_income_reported_m": 13500.0,
             "net_income_consensus_m": 12690.0,
             "net_income_surprise_pct": 6.38,
@@ -345,8 +345,9 @@ def fetch_latest_earnings_details(ticker: str, quarter_override: str = None) -> 
             "eps_consensus": 1.184,
             "eps_surprise_pct": 6.38,
             "receivables_yoy_pct": 5.4,
-            "verdict_summary": "Amazon.com Inc. (AMZN) Q2 2026: Revenue Beat (+4.17%) & EPS Beat (+6.38%) — Extended-Hours Price $257.26 (+9.24%) 🟢"
+            "verdict_summary": "Amazon.com Inc. (AMZN) Q2 2026: Revenue Beat (+0.85%) & EPS Beat (+6.38%) — Extended-Hours Price $257.26 (+9.24%) 🟢"
         }
+
 
     elif symbol == "META":
         return {

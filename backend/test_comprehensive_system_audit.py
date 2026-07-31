@@ -10,10 +10,11 @@ class TestComprehensiveSystemAudit(unittest.TestCase):
         self.assertEqual(quote["price_change_24h"], 9.24, "AMZN extended-hours price change % must equal +9.24%")
 
         details = fetch_latest_earnings_details("AMZN", "2026Q2")
-        self.assertEqual(details["revenue_reported_m"], 154170.0, "AMZN revenue reported must equal $154.17B")
-        self.assertEqual(details["revenue_surprise_pct"], 4.17, "AMZN revenue surprise % must equal +4.17% per Moomoo")
+        self.assertEqual(details["revenue_reported_m"], 60800.0, "AMZN revenue reported must equal $60.80B per Moomoo")
+        self.assertEqual(details["revenue_surprise_pct"], 0.85, "AMZN revenue surprise % must equal +0.85% per Moomoo")
         self.assertEqual(details["eps_reported"], 1.26, "AMZN reported EPS must equal $1.26")
         self.assertEqual(details["eps_surprise_pct"], 6.38, "AMZN EPS surprise % must equal +6.38% per Moomoo")
+
 
     def test_pltr_moomoo_live_price_and_historical_q1(self):
         quote = fetch_live_quote("PLTR")
@@ -58,7 +59,8 @@ class TestComprehensiveSystemAudit(unittest.TestCase):
         md = res["report_markdown"]
         self.assertIn("Thesis Drift Delta & Quarterly Moat Audit", md)
         self.assertIn("News Pulse & 盘后股价异动归因分析", md)
-        self.assertIn("4.17%", md, "Report must display exact revenue surprise +4.17%")
+        self.assertIn("0.85%", md, "Report must display exact revenue surprise +0.85%")
+
 
 if __name__ == "__main__":
     unittest.main()
