@@ -13,7 +13,7 @@ interface LeftPanelProps {
 
 // Comprehensive metadata and extended-hours anchors for Watchlist items
 const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; date: string; time: 'AMC' | 'BMO'; isRecent: boolean }> = {
-  NVDA: { price: 195.04, chg: -6.57, date: '08/27', time: 'AMC', isRecent: true },
+  NVDA: { price: 198.33, chg: 1.69,  date: '08/27', time: 'AMC', isRecent: true },
   AAPL: { price: 313.30, chg: -6.08, date: '07/30', time: 'AMC', isRecent: true },
   MSFT: { price: 451.10, chg: 18.22, date: '07/30', time: 'AMC', isRecent: true },
   TSLA: { price: 308.85, chg: -3.39, date: '07/23', time: 'AMC', isRecent: false },
@@ -26,6 +26,7 @@ const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; d
   AMZN: { price: 257.26, chg: 9.24,  date: '07/30', time: 'AMC', isRecent: true },
   META: { price: 544.74, chg: 1.08,  date: '07/29', time: 'AMC', isRecent: true }
 };
+
 
 
 // Finviz-style Earnings Release Matrix (Exact match with Finviz Widget Layout)

@@ -20,7 +20,8 @@ import os
 
 logger = logging.getLogger(__name__)
 
-DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "institutional_pms.db"))
+DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "institutional_pms.db"))
+
 ALPACA_API_KEY_ID = "PK6MNM5PP7MLF627QZORFTFYTI"
 ALPACA_SECRET_KEY = "7dyFe3sR8Pc8mzSyWE7dfktpJTK6Erza2EQyRoTDHVr3"
 
@@ -272,7 +273,9 @@ def fetch_alpaca_cached_quote(symbol: str) -> Dict[str, Any]:
 def get_shared_market_quote(ticker: str) -> Dict[str, Any]:
     """
     Main Entry Point for Cross-Project Shared Market Data (PMS, QuantBackTestEngine, etc).
-    Checks SQLite WAL Shared Cache first. If hit (<30s), returns in < 5ms.
+    Checks SQLite WAL Shared Cache first (<30s).
+    If cache miss, queries Alpaca Live Trade Stream FIRST (for real-time after-hours SIP trade prices),
+    and falls back to Yahoo v8 Chart API.
     """
     symbol = ticker.upper().strip()
 
@@ -281,10 +284,15 @@ def get_shared_market_quote(ticker: str) -> Dict[str, Any]:
     if cached and cached.get("current_price", 0) > 0:
         return cached
 
-    # 2. Dynamic Yahoo v8 Direct Chart Extraction
-    quote = fetch_dynamic_yahoo_quote(symbol)
-    if quote:
+    # 2. Query Alpaca REST Market Snapshots API (SIP Live Trade Stream) FIRST
+    quote = fetch_alpaca_cached_quote(symbol)
+    if quote and quote.get("current_price", 0) > 0 and quote.get("source") == "Alpaca Live Trade Stream":
         return quote
 
-    # 3. Dynamic Alpaca REST Market Stream Failover
+    # 3. Dynamic Yahoo v8 Direct Chart Extraction (Fallback)
+    quote_yf = fetch_dynamic_yahoo_quote(symbol)
+    if quote_yf:
+        return quote_yf
+
     return fetch_alpaca_cached_quote(symbol)
+
