@@ -11,9 +11,9 @@ echo Checking and clearing stale processes on ports 3000 & 8090...
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3000 ^| findstr LISTENING') do taskkill /f /pid %%a >nul 2>&1
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8090 ^| findstr LISTENING') do taskkill /f /pid %%a >nul 2>&1
 
-:: 1. Launch Python FastAPI Backend on Port 8090
-echo Starting Python FastAPI Backend on http://127.0.0.1:8090...
-start "FastAPI Backend" cmd /k "cd /d %~dp0backend && venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8090"
+:: 1. Launch Python FastAPI Backend & Centralized Market Data Hub Daemon on Port 8090
+echo Starting Python FastAPI Backend & Market Data Hub Daemon on http://127.0.0.1:8090...
+start "FastAPI Backend & Market Data Hub" cmd /k "cd /d %~dp0backend && venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8090"
 
 :: 2. Launch Vite React Frontend on Port 3000
 echo Starting Vite React Frontend on http://127.0.0.1:3000...
@@ -31,8 +31,10 @@ start http://127.0.0.1:3000/
 echo.
 echo ========================================================
 echo    Services Started Successfully!
-echo    - Web Dashboard: http://127.0.0.1:3000/
-echo    - Backend API Docs: http://127.0.0.1:8090/docs
+echo    - Web Dashboard:           http://127.0.0.1:3000/
+echo    - Backend API & Hub Docs:  http://127.0.0.1:8090/docs
+echo    - Shared SQLite Data Hub:  backend\institutional_pms.db (WAL Mode)
 echo ========================================================
 echo.
+
 
