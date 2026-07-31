@@ -180,10 +180,11 @@ def fetch_dynamic_yahoo_quote(symbol: str) -> Optional[Dict[str, Any]]:
 
 def fetch_alpaca_cached_quote(symbol: str) -> Dict[str, Any]:
     """
-    Unified Alpaca API Failover Engine:
-    Fetches real-time stock bar from Alpaca REST API and persists into shared_market_quotes.
+    Unified Alpaca Snapshots Engine:
+    Fetches real-time extended-hours latestTrade price and dailyBar from Alpaca SIP data stream.
+    Calculates exact percentage change against regular market closing price.
     """
-    url = f"https://data.alpaca.markets/v2/stocks/bars?symbols={symbol}&timeframe=1Day&limit=2"
+    url = f"https://data.alpaca.markets/v2/stocks/snapshots?symbols={symbol}"
     headers = {
         "APCA-API-KEY-ID": ALPACA_API_KEY_ID,
         "APCA-API-SECRET-KEY": ALPACA_SECRET_KEY,
@@ -193,25 +194,35 @@ def fetch_alpaca_cached_quote(symbol: str) -> Dict[str, Any]:
         req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req, timeout=5) as resp:
             data = json.loads(resp.read().decode('utf-8'))
-            bars = data.get("bars", {}).get(symbol, [])
-            if bars:
-                latest_bar = bars[-1]
-                prev_bar = bars[-2] if len(bars) >= 2 else latest_bar
-                current_price = float(latest_bar.get("c", 0.0))
-                previous_close = float(prev_bar.get("c", current_price))
-                chg_pct = round(((current_price - previous_close) / previous_close) * 100.0, 2) if previous_close > 0 else 0.0
-                
+            snap = data.get(symbol, {})
+            latest_trade = snap.get("latestTrade", {})
+            daily_bar = snap.get("dailyBar", {})
+            prev_bar = snap.get("prevDailyBar", {})
+
+            trade_price = float(latest_trade.get("p") or 0.0)
+            daily_close = float(daily_bar.get("c") or 0.0)
+            prev_close = float(prev_bar.get("c") or daily_close)
+
+            current_price = trade_price if trade_price > 0 else daily_close
+            last_close = prev_close if prev_close > 0 else current_price
+
+            if current_price > 0 and last_close > 0:
+                chg_pct = round(((current_price - last_close) / last_close) * 100.0, 2)
+            else:
+                chg_pct = 0.0
+
+            if current_price > 0:
                 quote_data = {
                     "symbol": symbol,
-                    "company_name": f"{symbol} Inc",
+                    "company_name": f"{symbol} Corp",
                     "sector": "Equity Market Stream",
-                    "trading_session": "Alpaca Real-Time Stream",
+                    "trading_session": "Alpaca Live Trade Stream",
                     "current_price": round(current_price, 2),
-                    "previous_close": round(previous_close, 2),
+                    "previous_close": round(last_close, 2),
                     "price_change_24h": chg_pct,
-                    "day_high": round(float(latest_bar.get("h", current_price)), 2),
-                    "day_low": round(float(latest_bar.get("l", current_price)), 2),
-                    "volume": int(latest_bar.get("v", 0)),
+                    "day_high": round(float(daily_bar.get("h") or current_price * 1.01), 2),
+                    "day_low": round(float(daily_bar.get("l") or current_price * 0.99), 2),
+                    "volume": int(daily_bar.get("v") or 0),
                     "market_cap": 0,
                     "enterprise_value": 0,
                     "total_revenue": 0,
@@ -227,39 +238,12 @@ def fetch_alpaca_cached_quote(symbol: str) -> Dict[str, Any]:
                         "num_analysts": 20,
                         "upside_pct": 15.0
                     },
-                    "source": "Alpaca Real-Time Cached Stream"
+                    "source": "Alpaca Live Trade Stream"
                 }
                 save_quote_to_cache(symbol, quote_data)
                 return quote_data
     except Exception as e:
-        logger.warning(f"Alpaca API cached fetch failed for {symbol}: {e}")
-
-    # Fallback to yfinance ticker if available
-    try:
-        yf_ticker = yf.Ticker(symbol)
-        fast_info = yf_ticker.fast_info
-        info = yf_ticker.info or {}
-        c_price = float(fast_info.last_price or info.get("currentPrice") or 0.0)
-        p_close = float(fast_info.previous_close or info.get("previousClose") or c_price)
-        chg = round(((c_price - p_close)/p_close)*100.0, 2) if p_close > 0 else 0.0
-        if c_price > 0:
-            quote_data = {
-                "symbol": symbol,
-                "company_name": info.get("shortName") or f"{symbol} Corp",
-                "sector": info.get("sector") or "Equity",
-                "trading_session": "yfinance Stream",
-                "current_price": round(c_price, 2),
-                "previous_close": round(p_close, 2),
-                "price_change_24h": chg,
-                "day_high": round(c_price * 1.01, 2),
-                "day_low": round(c_price * 0.99, 2),
-                "volume": int(fast_info.last_volume or 0),
-                "source": "yfinance Direct Stream"
-            }
-            save_quote_to_cache(symbol, quote_data)
-            return quote_data
-    except Exception:
-        pass
+        logger.warning(f"Alpaca Snapshots API fetch failed for {symbol}: {e}")
 
     return {
         "symbol": symbol,
@@ -270,6 +254,7 @@ def fetch_alpaca_cached_quote(symbol: str) -> Dict[str, Any]:
         "price_change_24h": 0.0,
         "source": "Default Stream"
     }
+
 
 def get_shared_market_quote(ticker: str) -> Dict[str, Any]:
     """
