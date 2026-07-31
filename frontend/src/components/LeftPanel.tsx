@@ -20,7 +20,8 @@ const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; d
   PLTR: { price: 123.35, chg: 0.88, date: '08/03', time: 'AMC', isRecent: true },
   MU:   { price: 111.40, chg: -1.85, date: '06/26', time: 'AMC', isRecent: false },
   IONQ: { price: 8.45,   chg: 3.20,  date: '08/07', time: 'AMC', isRecent: true },
-  NBIS: { price: 24.50,  chg: 9.58,  date: '07/28', time: 'BMO', isRecent: true },
+  NBIS: { price: 245.00, chg: 9.57,  date: '07/28', time: 'BMO', isRecent: true },
+
   BE:   { price: 14.80,  chg: 2.53,  date: '07/29', time: 'AMC', isRecent: true },
   VRT:  { price: 84.50,  chg: -3.10, date: '07/29', time: 'AMC', isRecent: true },
   AMZN: { price: 257.26, chg: 9.24,  date: '07/30', time: 'AMC', isRecent: true },

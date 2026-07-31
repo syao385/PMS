@@ -31,8 +31,9 @@ def fetch_live_quote(ticker: str) -> Dict[str, Any]:
         "META": {"current_price": 544.74, "previous_close": 538.92, "price_change_24h": 1.08, "company_name": "Meta Platforms Inc.", "sector": "Social Media / AI AdTech"},
         "PLTR": {"current_price": 123.35, "previous_close": 122.27, "price_change_24h": 0.88, "company_name": "Palantir Technologies Inc.", "sector": "Enterprise AI Software"},
         "MSFT": {"current_price": 422.50, "previous_close": 427.80, "price_change_24h": -1.24, "company_name": "Microsoft Corp.", "sector": "Software / Azure Cloud"},
-        "NBIS": {"current_price": 24.50, "previous_close": 22.36, "price_change_24h": 9.58, "company_name": "Nebius Group N.V.", "sector": "Tech / AI Infra"},
+        "NBIS": {"current_price": 245.00, "previous_close": 223.60, "price_change_24h": 9.57, "company_name": "Nebius Group N.V.", "sector": "Tech / AI Infra"},
         "VRT": {"current_price": 84.50, "previous_close": 87.20, "price_change_24h": -3.10, "company_name": "Vertiv Holdings Co", "sector": "Industrials / AI Power"},
+
         "BE": {"current_price": 14.80, "previous_close": 14.43, "price_change_24h": 2.53, "company_name": "Bloom Energy Corp", "sector": "Clean Energy / Grid"}
     }
 
@@ -121,8 +122,9 @@ def fetch_alpaca_live_quote(symbol: str) -> Dict[str, Any]:
         "META": {"current_price": 544.74, "previous_close": 538.92, "price_change_24h": 1.08, "company_name": "Meta Platforms Inc.", "sector": "Social Media / AI AdTech"},
         "PLTR": {"current_price": 123.35, "previous_close": 122.27, "price_change_24h": 0.88, "company_name": "Palantir Technologies Inc.", "sector": "Enterprise AI Software"},
         "MSFT": {"current_price": 422.50, "previous_close": 427.80, "price_change_24h": -1.24, "company_name": "Microsoft Corp.", "sector": "Software / Azure Cloud"},
-        "NBIS": {"current_price": 24.50, "previous_close": 22.36, "price_change_24h": 9.58, "company_name": "Nebius Group N.V.", "sector": "Tech / AI Infra"},
+        "NBIS": {"current_price": 245.00, "previous_close": 223.60, "price_change_24h": 9.57, "company_name": "Nebius Group N.V.", "sector": "Tech / AI Infra"},
         "VRT": {"current_price": 84.50, "previous_close": 87.20, "price_change_24h": -3.10, "company_name": "Vertiv Holdings Co", "sector": "Industrials / AI Power"},
+
         "BE": {"current_price": 14.80, "previous_close": 14.43, "price_change_24h": 2.53, "company_name": "Bloom Energy Corp", "sector": "Clean Energy / Grid"}
     }
 
