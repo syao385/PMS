@@ -19,7 +19,8 @@ const EARNINGS_CALENDAR_METADATA: Record<string, { date: string; time: 'AMC' | '
   AAPL: { date: '07/31', time: 'AMC', isRecent: true },
   MSFT: { date: '07/30', time: 'AMC', isRecent: true },
   TSLA: { date: '07/23', time: 'AMC', isRecent: false },
-  PLTR: { date: '08/05', time: 'AMC', isRecent: true },
+  PLTR: { date: '08/03', time: 'AMC', isRecent: true },
+
   MU: { date: '06/26', time: 'AMC', isRecent: false },
   IONQ: { date: '08/07', time: 'AMC', isRecent: true },
   NVDA: { date: '08/27', time: 'AMC', isRecent: false }
