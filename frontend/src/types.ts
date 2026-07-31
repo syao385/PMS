@@ -116,6 +116,7 @@ export interface ResearchMemoData {
   industryName?: string;
   currentPrice: number;
   priceChange24h: number;
+  earningsReleaseDate?: string;
   masterScores: MasterScores;
   mirrorTest: MirrorTest;
   valuation: ValuationData;
@@ -123,6 +124,7 @@ export interface ResearchMemoData {
   financialMetrics: FinancialMetric[];
   markdownContent: string;
 }
+
 
 export interface UnifiedScannerItem {
   ticker: string;

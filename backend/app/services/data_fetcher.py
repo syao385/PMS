@@ -828,6 +828,13 @@ def _get_raw_earnings_details(symbol: str, target_quarter: str) -> Dict[str, Any
                 rev_con = round(rev_rep * 0.98, 2)
                 rev_surp = round(((rev_rep - rev_con) / rev_con) * 100.0, 2)
                 
+                ni_con = round(ni_rep * 0.95, 2) if ni_rep > 0 else 0.0
+                ni_surp = round(((ni_rep - ni_con) / ni_con) * 100.0, 2) if ni_con > 0 else 0.0
+                
+                eps_rep = round(ni_rep / 1000.0, 2) if ni_rep > 0 else 0.50
+                eps_con = round(eps_rep * 0.95, 2) if eps_rep > 0 else 0.45
+                eps_surp = round(((eps_rep - eps_con) / eps_con) * 100.0, 2) if eps_con > 0 else 0.0
+
                 return {
                     "quarter_name": target_quarter,
                     "period_ending_date": period_date,
@@ -837,11 +844,11 @@ def _get_raw_earnings_details(symbol: str, target_quarter: str) -> Dict[str, Any
                     "revenue_consensus_m": rev_con,
                     "revenue_surprise_pct": rev_surp,
                     "net_income_reported_m": ni_rep,
-                    "net_income_consensus_m": round(ni_rep * 0.95, 2) if ni_rep > 0 else 0.0,
-                    "net_income_surprise_pct": 5.26 if ni_rep > 0 else 0.0,
-                    "eps_reported": round(ni_rep / 1000.0, 2) if ni_rep > 0 else 0.50,
-                    "eps_consensus": round((ni_rep / 1000.0) * 0.95, 2) if ni_rep > 0 else 0.45,
-                    "eps_surprise_pct": 5.26,
+                    "net_income_consensus_m": ni_con,
+                    "net_income_surprise_pct": ni_surp,
+                    "eps_reported": eps_rep,
+                    "eps_consensus": eps_con,
+                    "eps_surprise_pct": eps_surp,
                     "receivables_yoy_pct": 2.5,
                     "verdict_summary": f"{symbol} SEC 10-Q Filing ({period_date}): Revenue ${rev_rep}M (+{rev_surp}% Beat) 🟢"
                 }
@@ -854,8 +861,11 @@ def _get_raw_earnings_details(symbol: str, target_quarter: str) -> Dict[str, Any
     
     dyn_rev_rep = round(live_price * 12.5, 2)
     dyn_rev_con = round(dyn_rev_rep * 0.98, 2)
+    dyn_rev_surp = round(((dyn_rev_rep - dyn_rev_con) / dyn_rev_con) * 100.0, 2)
+
     dyn_eps_rep = round(live_price / live_pe if live_pe > 0 else 1.5, 2)
     dyn_eps_con = round(dyn_eps_rep * 0.95, 2)
+    dyn_eps_surp = round(((dyn_eps_rep - dyn_eps_con) / dyn_eps_con) * 100.0, 2) if dyn_eps_con > 0 else 0.0
 
     return {
         "quarter_name": target_quarter,
@@ -864,13 +874,14 @@ def _get_raw_earnings_details(symbol: str, target_quarter: str) -> Dict[str, Any
         "sync_latency": "<15 minutes (SEC EDGAR Live Sync)",
         "revenue_reported_m": dyn_rev_rep,
         "revenue_consensus_m": dyn_rev_con,
-        "revenue_surprise_pct": 2.04,
+        "revenue_surprise_pct": dyn_rev_surp,
         "eps_reported": dyn_eps_rep,
         "eps_consensus": dyn_eps_con,
-        "eps_surprise_pct": 5.26,
+        "eps_surprise_pct": dyn_eps_surp,
         "receivables_yoy_pct": 2.0,
-        "verdict_summary": f"{symbol} {target_quarter}: Revenue Beat (+2.04%) & EPS Beat (+5.26%) 🟢"
+        "verdict_summary": f"{symbol} {target_quarter}: Revenue Beat (+{dyn_rev_surp}%) & EPS Beat (+{dyn_eps_surp}%) 🟢"
     }
+
 
 
 

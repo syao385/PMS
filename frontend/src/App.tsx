@@ -56,7 +56,9 @@ export function App() {
     const name = quote?.company_name || res?.company_name || existing?.companyName || `${ticker} Corp`;
     const sector = quote?.sector || res?.sector || existing?.sector || 'Technology';
     const industryName = res?.industry_name || quote?.industry_name || existing?.industryName || 'US Technology';
+    const earningsReleaseDate = res?.earnings_release_date || quote?.earnings_release_date || existing?.earningsReleaseDate || 'SEC Sync';
     const pe = quote?.pe_ratio || res?.valuation?.current_pe || 30.0;
+
     const mcap = quote?.market_cap || 0;
     const analystTgt = quote?.analyst_consensus?.mean_target || res?.valuation?.analyst_target || Math.round(price * 1.15 * 100) / 100;
 
@@ -83,7 +85,9 @@ export function App() {
       industryName,
       currentPrice: price,
       priceChange24h: chg,
+      earningsReleaseDate: earningsReleaseDate,
       masterScores: res?.master_scores ? {
+
         duan: res.master_scores.duan,
         buffett: res.master_scores.buffett,
         munger: res.master_scores.munger,

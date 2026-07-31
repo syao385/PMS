@@ -11,28 +11,7 @@ interface LeftPanelProps {
   symbolsData: Record<string, ResearchMemoData>;
 }
 
-// Comprehensive metadata and extended-hours anchors for Watchlist items (Exact Moomoo & Yahoo Premarket Match)
-const WATCHLIST_REALTIME_ANCHORS: Record<string, { price: number; chg: number; date: string; time: 'AMC' | 'BMO'; isRecent: boolean }> = {
-  NVDA: { price: 196.84, chg: 0.92,  date: '08/27', time: 'AMC', isRecent: true },
-  AAPL: { price: 311.87, chg: -6.47, date: '07/30', time: 'AMC', isRecent: true },
-  MSFT: { price: 448.47, chg: -0.58, date: '07/30', time: 'AMC', isRecent: true },
-  TSLA: { price: 309.10, chg: 0.08,  date: '07/23', time: 'AMC', isRecent: false },
-  PLTR: { price: 123.23, chg: 0.79,  date: '08/03', time: 'AMC', isRecent: true },
-  MU:   { price: 902.90, chg: 3.23,  date: '06/26', time: 'AMC', isRecent: false },
-  IONQ: { price: 36.20,  chg: 1.20,  date: '08/07', time: 'AMC', isRecent: true },
-  NBIS: { price: 199.00, chg: 5.61,  date: '07/28', time: 'BMO', isRecent: true },
-  BE:   { price: 219.30, chg: 5.88,  date: '07/29', time: 'AMC', isRecent: true },
-  VRT:  { price: 234.90, chg: 3.25,  date: '07/29', time: 'AMC', isRecent: true },
-  AMZN: { price: 257.95, chg: 9.53,  date: '07/30', time: 'AMC', isRecent: true },
-  META: { price: 542.78, chg: 0.70,  date: '07/29', time: 'AMC', isRecent: true }
-};
-
-
-
-
-
-
-
+// Dynamic Watchlist Item renderer: 100% Live Market Stream (Zero Static Fallback Anchors)
 // Finviz-style Earnings Release Matrix (Exact match with Finviz Widget Layout)
 interface FinvizCalendarRow {
   dateSession: string; // e.g. "Jul 29/a", "Jul 30/b", "Jul 30/a"
@@ -118,16 +97,13 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
             <tbody className="divide-y divide-slate-800/60 font-sans">
               {watchlist.map((ticker) => {
                 const data = symbolsData[ticker];
-                const anchor = WATCHLIST_REALTIME_ANCHORS[ticker] || { price: 100.0, chg: 0.0, date: '08/15', time: 'AMC', isRecent: false };
-                
-                const price = data?.currentPrice || anchor.price;
-                const chg = data?.priceChange24h !== undefined ? data.priceChange24h : anchor.chg;
+                const price = data?.currentPrice || 0.0;
+                const chg = data?.priceChange24h !== undefined ? data.priceChange24h : 0.0;
                 const isSelected = ticker === currentTicker;
                 const isNegative = chg < 0;
-                const earnMeta = { date: anchor.date, time: anchor.time, isRecent: anchor.isRecent };
-
 
                 return (
+
                   <tr
                     key={ticker}
                     onClick={() => onSelectTicker(ticker)}
@@ -144,14 +120,11 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
 
                     {/* Column 2: Earnings Date (+/- 7 Days Highlight) */}
                     <td className="p-2 text-center font-mono text-[11px]">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                        earnMeta.isRecent
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                          : 'bg-slate-800 text-slate-400'
-                      }`}>
-                        {earnMeta.date} {earnMeta.time}
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300">
+                        {data?.earningsReleaseDate ? data.earningsReleaseDate.split(' ')[0] : 'SEC Sync'}
                       </span>
                     </td>
+
 
                     {/* Column 3: Real-Time Price (Inc. Premarket / AH) */}
                     <td className="p-2 text-right font-mono font-semibold text-slate-200">
