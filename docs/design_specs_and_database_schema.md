@@ -324,5 +324,36 @@ The fields in the **INSTITUTIONAL ORDER FLOW & SENTIMENT** widget are derived us
 2. **Zero Lock Contention**: SQLite WAL mode enables unlimited parallel read transactions across sub-agents and sub-projects.
 3. **5-Second TTL Guarantee**: Ensures `@GammaGexTrading` receives instant, rate-limit-free updates for Put Wall, Call Wall, GEX Flip Level (Zero Gamma), and Center of Gravity.
 
+---
+
+### 8.4 Dynamic Watchlist Synchronization & Event Trigger Specifications
+
+> **MANDATE ON SYMBOL DYNAMISM**: Stock symbols MUST NOT be fixed in static frontend arrays or backend hardcoded dictionaries. All symbols stream dynamically from the SQLite `watchlist` table and sync across the system on startup and event triggers.
+
+1. **Daily Sync & Startup Lifecycle**:
+   - On application mount, `App.tsx` invokes `fetchWatchlistFromDB()`, loading active symbols from the SQLite database (`backend/institutional_pms.db`).
+2. **`Add Symbol` Event Trigger**:
+   - User inputs a symbol (e.g. `AMD`, `GOOGL`, `INTC`, `COIN`).
+   - Invokes `addWatchlistSymbolToDB(ticker)` to insert into SQLite table `watchlist`.
+   - Triggers `market_data_hub.py` to stream live market quotes and SEC filings without requiring page reload.
+3. **`Remove Symbol` Event Trigger**:
+   - User clicks remove icon on watchlist item.
+   - Invokes `removeWatchlistSymbolFromDB(ticker)` to delete from SQLite table `watchlist`.
+4. **Zero Static Fallback Anchors**:
+   - Static dictionaries such as `WATCHLIST_REALTIME_ANCHORS` are purged from `LeftPanel.tsx`. Watchlist items stream prices, 24h % change, and earnings dates dynamically from `symbolsData[ticker]`.
+
+---
+
+### 8.5 SEC EDGAR GAAP 10-Q Financial Filing Sync & Gatekeeper Rules
+
+1. **Audited SEC EDGAR GAAP 10-Q Filing Storage**:
+   - Explicit audited filing details stored for Micron Technology (`MU`: Period Ended `2026-05-30`, Release Date `2026-06-26 AMC`, Revenue `$6,811.0M`, Net Income `$702.0M`, EPS `$0.62`), `AMZN`, `META`, `AAPL`, `PLTR`, `NBIS`, `BE`, and `VRT`.
+2. **Dynamic Live SEC Financial Extractor**:
+   - Unlisted symbols automatically query `yfinance.Ticker(symbol).quarterly_income_stmt` dynamically to parse exact period ending dates, revenue reported, and net income without returning static defaults.
+3. **Financial Integrity Gatekeeper Validation**:
+   - Every earnings result is passed through `validate_earnings_financial_rigor()`.
+   - Ensures that $\text{Revenue Surprise \%} = \frac{\text{Reported} - \text{Consensus}}{\text{Consensus}} \times 100\%$ and $\text{EPS Surprise \%} = \frac{\text{Reported} - \text{Consensus}}{\text{Consensus}} \times 100\%$ match with mathematical precision ($\pm 0.10\%$). Discrepancies raise `ValueError` to block database pollution.
+
+
 
 
